@@ -1,6 +1,6 @@
 node_modules
 dist
 yarn.lock
-project.config.json.config
+project.config.json
 .env.dev
 .env.prod
