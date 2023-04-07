@@ -1,12 +1,8 @@
 import { Menu } from 'antd';
-import { Link, useLocation } from 'react-router-dom';
-import React from 'react';
-import {
-  isSmallMedia
-} from '../../utils/helper';
+import { useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+// import React from 'react';
 import routes from '../../config/routes';
-
-const SubMenu = Menu.SubMenu;
 
 function getMenuConfig(routes, key) {
   let res = [];
@@ -25,14 +21,15 @@ function getMenuConfig(routes, key) {
       childrenRoutes = childrenRoutes.map(item => ({...item, path: `${path}/${item.path}`}))
     }
 
-    const k = !key ? `${i}` : `${key}-${i}`;
+    // const k = !key ? `${i}` : `${key}-${i}`;
 
     res.push({
-      key: k,
+      key: path,
       label: el.label,
       icon: el.icon,
       path: path,
-      children: getMenuConfig(childrenRoutes, k)
+      sidesubmenu: el.sidesubmenu,
+      children: childrenRoutes && !el.sidesubmenu && getMenuConfig(childrenRoutes, path)
     })
   };
 
@@ -58,66 +55,70 @@ function getSelectedKey(pathname, config) {
   return activeKeys;
 }
 
+
 const routesConfig = getMenuConfig(routes);
 
 export default function NavMenu({menuCollapsed}) {
 
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   console.log(pathname);
 
   const defaultSelectedKeys = getSelectedKey(pathname, routesConfig);
 
   const defaultOpenKeys = !menuCollapsed ? routesConfig.map(item => item.key) : [];
 
-  // const appendProps = isSmallMedia() ? {} : {expandIcon: () => null};
+  // const appendProps = {expandIcon: () => null};
   console.log(defaultSelectedKeys)
 
-  return (
-    <Menu
-      theme="light"
-      mode="inline"
-      defaultSelectedKeys={defaultSelectedKeys} 
-      defaultOpenKeys={defaultOpenKeys} 
-      onClick={() => false}
-      // inlineIndent={10}
-      // {...appendProps}
-    >
-      {
-        routesConfig.map((item) => {
+  const handleMenuClick = useCallback(({ item, key }) => {
+    navigate(item.props.path);
+  }, [])
 
-          if(item.hideInNav)return null;
-          
-          return (item.children && item.children.length > 0) ? (
-            <SubMenu 
-              key={item.key}
-              title={<span>{item.icon}<span>{item.label}</span></span>}
-            >
-              {
-                item.children.map((item) => {
-                  return (
-                    <Menu.Item 
-                      key={item.key} 
-                    >
-                      <Link to={item.path}>
-                        <span>{item.label}</span>
-                      </Link>
-                    </Menu.Item>
-                  )
-                })
-              }
-            </SubMenu>
-          ) : (
-            <Menu.Item key={item.key}>
-              <Link to={item.path}>
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            </Menu.Item>
-          )
-
-        })
-      }
-    </Menu>
-  )
+  return <Menu
+          defaultSelectedKeys={defaultSelectedKeys}
+          defaultOpenKeys={defaultOpenKeys}
+          mode="inline"
+          theme="dark"
+          items={routesConfig}
+          onClick={handleMenuClick}
+        />
 }
 
+{/* <section className="menu-wrapper">
+  <div className="main-menu mgt-block">
+    <Menu items={routesConfig} />
+  </div>
+  <div className="mgt-block">
+    <SubMenu items={routesConfig} />
+  </div>
+</section> */}
+
+// function Menu({items}) {
+  
+//   return items.map(item => (
+//     !item.hideInNav && 
+//     <div className="menu-item">
+//       <div className="top-menu">
+//         {item.icon && <span className="mgt-block icon">{item.icon}</span>}
+//         <span className="mgt-block label">{item.label}</span>
+//       </div>
+//       {
+//         item.children && item.children.length > 0 && 
+//         <div className="sub-menu">
+//           <Menu items={item.children} />
+//         </div>
+//       }
+//     </div>
+//   ))
+// }
+
+// function SubMenu({items}) {
+//   return (
+//     <div className="sub-sub-menu">
+//       {
+//         items.map(item => <div key={item.label}><Link to={item.path}>{item.label}</Link></div>)
+//       }
+//     </div>
+//   )
+// }

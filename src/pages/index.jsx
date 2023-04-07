@@ -36,6 +36,7 @@ const baseRoutes = [
 
 function EntryPoint(){
     // const isLogined = Cookie.get(projectConfig.token_name);
+    const isLogined = true;
     return !isLogined ? <Navigate to="login" replace /> : <Navigate to="dashboard" />
 }
 
