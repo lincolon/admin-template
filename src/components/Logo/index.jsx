@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router';
 
 import projectConfig from '../../../project.config.json';
 
@@ -6,9 +7,11 @@ import './style.css';
 
 export default function Logo(){
 
+    const navigate = useNavigate();
+
     return (
         <section className="logoContainer">
-            <a onClick={() => {props.navigate('/dashboard', { replace: true })}}>
+            <a onClick={() => {navigate('/dashboard', { replace: true })}}>
                 <span className={`logo img-cover mgt-block`}></span>
                 <h2 
                     className="mgt-block" 
