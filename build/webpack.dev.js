@@ -8,6 +8,7 @@ const devPort = process.env.PORT || projectConfig.development.server_port || '80
 
 module.exports = merge(common, {
     mode: 'development',
+    devtool: 'inline-source-map',
     devServer: {
         static: './dist',
         port: devPort,
