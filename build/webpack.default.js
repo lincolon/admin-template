@@ -28,10 +28,6 @@ module.exports = {
             '@service': path.join(__dirname, '../src/service'),
         }
     },
-    externals: {
-        "QQMap": "window.TMap",
-        "@antv/g6": "window.G6",
-    },
     module: {
         rules: [
             {

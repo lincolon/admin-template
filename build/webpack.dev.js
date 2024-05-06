@@ -1,7 +1,7 @@
 const merge = require('webpack-merge').merge;
 const webpack = require('webpack');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-
+const Dotenv = require('dotenv-webpack');
 const common = require('./webpack.default.js');
 const projectConfig = require('../project.config.json');
 const devPort = process.env.PORT || projectConfig.development.server_port || '8000';
@@ -34,6 +34,7 @@ module.exports = merge(common, {
             },
             clearConsole: true,
         }),
-        new webpack.HotModuleReplacementPlugin()
+        new webpack.HotModuleReplacementPlugin(),
+        new Dotenv({path: './.env.dev'}),
     ]
 });
