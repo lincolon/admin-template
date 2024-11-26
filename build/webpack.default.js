@@ -1,12 +1,34 @@
 const path = require('path');
+const fs = require('fs');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const Dotenv = require('dotenv-webpack');
 
 const projectConfig = require('../project.config.json');
 
-const devMode = process.env.NODE_ENV === "development";
+const NODE_ENV = process.env.NODE_ENV
 
+const devMode = NODE_ENV === "development";
+
+// 根据环境来读取配置文件（本地环境和对应的环境）
+const dotenvFiles = [`.env`, `.env.${NODE_ENV}`, `.env.${NODE_ENV}.local`, '.env.local'].filter(
+    Boolean
+)
+
+const dotEnvPlugins = [];
+dotenvFiles.forEach((file) => {
+    // 识别文件是否存在
+    if (!fs.existsSync(path.resolve(__dirname, `../${file}`))) {
+        return
+    }
+    
+    dotEnvPlugins.push(new Dotenv({
+        path: path.resolve(__dirname, `../${file}`),
+        safe: false,
+    }))
+})
+  
 module.exports = {
     entry: path.resolve(__dirname, '..', 'src/app.js'),
     output: {
@@ -19,13 +41,13 @@ module.exports = {
         type: 'filesystem',
         allowCollectingMemory: true,
     },
-    // devtool: 'inline-source-map',
     resolve:{
         extensions:['.js','.jsx','.json'],//这几个后缀名的文件后缀可以省略不写
         alias:{
             '@':path.join(__dirname, '../src'), //这样 @就表示根目录src这个路径
             '@modules': path.join(__dirname, '../node_modules'),
             '@service': path.join(__dirname, '../src/service'),
+            '@pages': path.join(__dirname, '../src/pages'),
         }
     },
     module: {
@@ -48,10 +70,67 @@ module.exports = {
                 ],
             },
             {
+                test: /\.module\.css$/i,
+                use: [
+                    devMode ? "style-loader" : MiniCssExtractPlugin.loader,
+                    {
+                        loader: "css-loader",
+                        options: {
+                            modules: true,
+                            importLoaders: 1,
+                            localIdentName: devMode ? '[name]__[local]--[contenthash:base64:5]' : '[hash:base64:5]',
+                        },
+                    },
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ]
+                            }
+                        }
+                    },
+                ],
+            },
+            {
                 test: /\.less$/i,
                 use: [
                     devMode ? "style-loader" : MiniCssExtractPlugin.loader,
                     "css-loader",
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: [
+                                    "postcss-preset-env",
+                                ]
+                            }
+                        }
+                    }, 
+                    {
+                        loader: "less-loader", 
+                        options: {
+                            lessOptions:{
+                                javascriptEnabled:true,
+                                modifyVars: projectConfig.theme,
+                            }
+                        }
+                    }
+                ],
+            },
+            {
+                test: /\.module\.less$/i,
+                use: [
+                    devMode ? "style-loader" : MiniCssExtractPlugin.loader,
+                    {
+                        loader: "css-loader",
+                        options: {
+                            modules: true,
+                            importLoaders: 1,
+                            localIdentName:  devMode ? '[name]__[local]--[contenthash:base64:5]' : '[hash:base64:5]',
+                        },
+                    },
                     {
                         loader: "postcss-loader",
                         options: {
@@ -115,20 +194,17 @@ module.exports = {
     },
     plugins: [
         new webpack.ProgressPlugin(),
-        new webpack.IgnorePlugin({ 
-            resourceRegExp: /^\.\/locale$/,
-            contextRegExp: /moment$/,
-        }),
         new HtmlWebpackPlugin({
             title: projectConfig.name,
             mapKey: projectConfig.map_key,
             inject: 'head',
-            favicon: path.resolve(__dirname, '..', 'public/favico.png'),
+            favicon: path.resolve(__dirname, '..', 'public/favicon.ico'),
             template: path.resolve(__dirname, '..', 'public/index.ejs'),
             minify: { // 压缩html
                 collapseWhitespace: true,
                 removeComments: true
             }
         }),
+        ...dotEnvPlugins,
     ]
 }

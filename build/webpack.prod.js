@@ -4,7 +4,6 @@ const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
 const common = require('./webpack.default.js');
-const Dotenv = require('dotenv-webpack');
 
 module.exports = merge(common, {
     mode: 'production',
@@ -29,6 +28,5 @@ module.exports = merge(common, {
             chunkFilename: '[id].css',
             ignoreOrder: false,
         }),
-        new Dotenv({path: './.env.prod'}),
     ]
 })

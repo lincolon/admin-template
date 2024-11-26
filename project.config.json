@@ -10,14 +10,5 @@
         "@input-placeholder-color": "#bcc6dd",
         "@table-selected-row-bg": "#F7F9FF"
     },
-    "production": {
-        "host": ""
-    },
-    "development": {
-        "host": "",
-        "server_port": "9999"
-    },
-    "token_name": "",
-    "page_size": 20,
-    "map_key": ""
+    "port": "9090"
 }

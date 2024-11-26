@@ -1,10 +1,11 @@
 const merge = require('webpack-merge').merge;
+const path = require('path');
 const webpack = require('webpack');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-const Dotenv = require('dotenv-webpack');
 const common = require('./webpack.default.js');
 const projectConfig = require('../project.config.json');
-const devPort = process.env.PORT || projectConfig.development.server_port || '8000';
+
+const devPort = process.env.PORT || projectConfig.port || '8000';
 
 module.exports = merge(common, {
     mode: 'development',
@@ -14,7 +15,7 @@ module.exports = merge(common, {
         port: devPort,
         host: '0.0.0.0',
         hot: true,
-        // liveReload: true,
+        liveReload: true,
         historyApiFallback: true,
         open: true, //服务启动后打开浏览器,
         client: {
@@ -35,6 +36,5 @@ module.exports = merge(common, {
             clearConsole: true,
         }),
         new webpack.HotModuleReplacementPlugin(),
-        new Dotenv({path: './.env.dev'}),
-    ]
+    ],
 });

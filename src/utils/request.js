@@ -2,14 +2,11 @@ import axios from 'axios';
 import { notification } from 'antd'
 import NProgress from 'nprogress';
 import Cookie from 'js-cookie';
-// import qs from 'qs';
-
-import projectConfig from '../../project.config.json';
 
 import { refreshToken } from '../service/common';
 
-const env = process.env.NODE_ENV === "development" ? "development" : "production"
-const hostApi = projectConfig[env].host;
+const hostApi = process.env.HOST_API;
+const token_name = process.env.TOKEN_NAME;
 
 const requestQueen = {
   data: [],
@@ -56,7 +53,7 @@ export default function initRequest(){
     };
 
     if(config.url.indexOf('/login') === -1){
-      authorization["Authorization"] = `Bearer ${Cookie.get(projectConfig.token_name)}`;
+      authorization["Authorization"] = `Bearer ${Cookie.get(token_name)}`;
     }
 
     if(requestQueen.isLoading(config.url))return;
@@ -94,7 +91,7 @@ export default function initRequest(){
     } else if(+code === 402) {
       console.log(config)
       const {data: { access_token }} =  await refreshToken();
-      Cookie.set(projectConfig.token_name, access_token);
+      Cookie.set(token_name, access_token);
       axios.post(config.url, config.data, {
         headers: {
           Authorization: access_token

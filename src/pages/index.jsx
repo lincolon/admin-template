@@ -1,17 +1,15 @@
 import React from 'react'
 import { useRoutes, Navigate, BrowserRouter } from 'react-router-dom'
 import { ConfigProvider } from 'antd';
-import Cookie from 'js-cookie';
 import zhCN from 'antd/lib/locale/zh_CN'; 
 
-import projectConfig from '../../project.config.json'
 import routes from '../config/routes'
 
 import LoginPage from './Login'
 import Page403 from './Errors/403';
 import NotFound from './Errors/404';
 import Page500 from './Errors/500';
-import MainLayout from '../components/MainLayout'
+import MainLayout from '../components/MainLayout';
 
 const baseRoutes = [
     {
