@@ -11,8 +11,10 @@ const NODE_ENV = process.env.NODE_ENV
 
 const devMode = NODE_ENV === "development";
 
+console.log('NODE_ENV', NODE_ENV)
+
 // 根据环境来读取配置文件（本地环境和对应的环境）
-const dotenvFiles = [`.env`, `.env.${NODE_ENV}`, `.env.${NODE_ENV}.local`, '.env.local'].filter(
+const dotenvFiles = ['.env.local', `.env.${NODE_ENV}.local`, `.env.${NODE_ENV}`, `.env`].filter(
     Boolean
 )
 
@@ -25,10 +27,11 @@ dotenvFiles.forEach((file) => {
     
     dotEnvPlugins.push(new Dotenv({
         path: path.resolve(__dirname, `../${file}`),
-        safe: false,
+        systemvars: true, // 加载系统环境变量
+        silent: true, // 忽略无效的 .env 文件
     }))
 })
-  
+
 module.exports = {
     entry: path.resolve(__dirname, '..', 'src/app.js'),
     output: {
@@ -48,6 +51,7 @@ module.exports = {
             '@modules': path.join(__dirname, '../node_modules'),
             '@service': path.join(__dirname, '../src/service'),
             '@pages': path.join(__dirname, '../src/pages'),
+            '@constant': path.join(__dirname, '../src/constant'),
         }
     },
     module: {
