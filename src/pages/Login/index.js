@@ -1,5 +1,5 @@
-import React from 'react';
-import { Form, Input, Button, Layout } from 'antd';
+import React, { useRef, useState } from 'react';
+import { Form, Input, Button, Layout, message } from 'antd';
 import {
   LockOutlined,
   PhoneOutlined
@@ -9,41 +9,16 @@ import Cookie from 'js-cookie';
 import './login.less';
 import CFooter from '../../components/CFooter';
 import rules from '../../utils/rules';
-// import {isProduction, cookieAllowDomain} from '../../config/host';
 
-import projectConfig from '../../../project.config.json';
-
-import { login } from './service/login';
+import { login, loginByCode, sendCode, getIMSign  } from './service';
 
 import storage from 'localforage'
+import { ProFormDependency } from '@ant-design/pro-form';
 
 const { Content } = Layout;
 
-const { passReg } = rules;
+const { phoneReg } = rules;
 
-// function CheckService(){
-//   // const isDev = process.env.NODE_ENV === "development";
-//   const defaultService = cookie.getItem('hostApi') || 'https://luoxiao-api.smart-store.2bao.org/api';
-
-//   const handleChange = async (e) => {
-//     const val = e.target.value;
-//     cookie.set('hostApi', val, Infinity, '/', cookieAllowDomain);
-//     window.location.reload();
-//   }
-
-//   if(!isProduction){
-//     return (
-//       <section style={{textAlign: 'center', marginBottom: 20}}>
-//         <Radio.Group defaultValue={defaultService} buttonStyle="solid" onChange={handleChange}>
-//           <Radio.Button value="https://sapi.2bao.org/api">线上测试服务</Radio.Button>
-//           <Radio.Button value="https://luoxiao-api.smart-store.2bao.org/api">本地测试服务</Radio.Button>
-//           <Radio.Button value="https://feiqiang-api.smart-store.2bao.org/api">本地费强测试服务</Radio.Button>
-//         </Radio.Group>
-//       </section>
-//     )
-//   }
-//   return null;
-// }
 
 function LoginPage(props) {
 
@@ -51,21 +26,22 @@ function LoginPage(props) {
   const navgiate = useNavigate()
 
   const handleSubmit = async (values) => {
-    const { data: { access_token, menu, user } } = await login({phone: values.userName, password: values.password})
-    Cookie.set(projectConfig.token_name, access_token);
+    const { data: { token, user } } = await loginByCode({mobilePhone: values.userName, code: values.code})
+    Cookie.set(process.env.TOKEN_NAME, token.accessToken);
+    const imSign = await getIMSign();
+    storage.setItem('refreshToken', token.refreshToken);
+    storage.setItem('imSign', imSign.data);
     await storage.setItem('userInfo', user);
-    await storage.setItem('permission', menu);
-    navgiate('/disaster-areas');
+    navgiate('/app');
   }
 
   return (
     <Layout className="loginLayeroutContainer">
       <Content className="loginLayeroutContent">
-        {/* <CheckService /> */}
         <section>
           <div className="pageTitle">
             <span className="logo img-cover no-bg"></span>
-            <h1 className="pageTitleH1">{projectConfig.name}</h1>
+            <h1 className="pageTitleH1">河南中医院</h1>
           </div>
           <summary></summary>
         </section>
@@ -74,6 +50,7 @@ function LoginPage(props) {
             form={form}
             onFinish={handleSubmit} 
             className="login-form"
+            initialValues={{userName: '13586578127', code: '1234'}}
           >
             <Form.Item
               name="userName"
@@ -87,20 +64,20 @@ function LoginPage(props) {
                 placeholder="登录手机" 
               />
             </Form.Item>
-            <Form.Item
-              name="password"
-              rules={[
-                { required: true, message: '请输入密码' },
-                { pattern: passReg, message: '密码不能少于6位' }
-              ]}
-            >
-              <Input.Password 
-                size="large" 
-                prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} 
-                type="password" 
-                placeholder="密码" 
-              />
-            </Form.Item>
+            <ProFormDependency name={['userName']}>
+              {
+                ({userName}) => {
+                  return <Form.Item
+                    name="code"
+                    rules={[
+                      { required: true, message: '请输入验证码' },
+                    ]}
+                  >
+                  <CodeSender phone={userName} />
+                </Form.Item>
+                }
+              }
+            </ProFormDependency>
             <Form.Item>
               <Button size="large" type="primary" htmlType="submit" className="loginFormButton">
                 登&nbsp;&nbsp;录
@@ -111,6 +88,46 @@ function LoginPage(props) {
       </Content>
       <CFooter />
     </Layout>
+  )
+}
+
+function CodeSender({ phone, onChange, value }) {
+
+  const [ disabled, setDisabled ] = useState(false);
+  const [ countDown, setCountDown ] = useState('获取验证码');
+  const timer = useRef(null);
+
+  const handleSendCode = async () => {
+    if(phoneReg.test(phone)) {
+      await sendCode({mobilePhone: phone});
+      setDisabled(true);
+      let time = 60;
+      timer.current = setInterval(() => {
+        if(time <= 1) {
+          clearInterval(timer.current);
+          setDisabled(false);
+          setCountDown('获取验证码')
+        } else {
+          setCountDown(`${time}秒后重新获取`);
+          time--;
+        }
+      }, 1000);
+    }else{
+      message.error('请输入正确的手机号');
+    }
+  }
+
+  return (
+    <Input 
+      prefix={<LockOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} 
+      size="large" 
+      value={value}
+      placeholder="请输入验证码" 
+      onChange={onChange}
+      addonAfter={
+        <Button disabled={disabled} type="link" onClick={handleSendCode}>{countDown}</Button>
+      }
+    />
   )
 }
 

@@ -19,115 +19,22 @@ html, body, #root {
     border-radius:6px;
     background:rgba(0,0,0,0.3);
   }
-  
-  ol{
-    padding-left: 14px;
-    margin-bottom: 0px;
-  }
-  
-  .ant-page-header {
-    /* margin: 10px 14px 0px !important; */
-    padding: 8px 14px 7px 14px !important;
-    background-color: #fff !important;
-    border-radius: 6px;
-  }
-  
-  .ant-pro-table-search{
-    padding-top: 14px !important;
+
+  .fz-13{
+    font-size: 13px;
   }
 
-  .ant-pro-table-search .ant-form-item{
-    margin-bottom: 14px !important;
+  .fz-12{
+    font-size: 12px;
   }
 
-  .searchbar-selector .ant-select-selector{
-    height: 32px;
-    overflow-y: auto;
+  .fz-gray{
+    color: #999;
   }
-  
-  .ant-page-header-heading-title{
-    font-size: 16px !important;
+
+  .fz-bold{
+    font-weight: 500;
   }
-  
-  .datepicker-form-validate input,
-  .has-error .datepicker-form-validate.ant-input,
-  .has-error .datepicker-form-validate.ant-input-number{
-    border-color: #d9d9d9 !important;
-  }
-  
-  /* .ant-form-item{
-    margin-bottom: 19px !important;
-  }
-  
-  .ant-form-item-with-help{
-    margin-bottom: 0px !important;
-  } */
-  
-  h4.ant-typography{
-    font-size: 16px !important;
-  }
-  
-  .ant-typography h4{
-    font-size: 16px !important;
-  }
-  
-  .ant-page-header-footer{
-    margin-top: 0 !important;
-  }
-  
-  .ant-page-header.has-footer{
-    padding-bottom: 0 !important;
-  }
-  
-  .ant-page-header-footer .page-header-tab{
-    padding-left: 0px !important;
-  }
-  
-  .ant-radio-group-reset .ant-radio-button-wrapper{
-    border-radius: 3px !important;
-    margin-right: 10px !important;
-    margin-bottom: 10px;
-  }
-  
-  .center-form-item .ant-form-explain{
-    text-align: center;
-  }
-  
-  .ant-input-disabled{
-    color: rgba(0, 0, 0, 0.65) !important;
-    /* background-color: #fff !important; */
-  }
-  
-  .ant-checkbox-wrapper + .ant-checkbox-wrapper{
-    margin-left: 0px !important;
-    margin-right: 8px;
-  }
-  
-  .ant-checkbox-wrapper{
-    // margin-right: 8px !important;
-  }
-  
-  .ant-form-item-cs{
-    margin-bottom: 6px !important;
-  }
-  
-  .advance-filter-wrapper .advance-filter:nth-of-type(1){
-    margin-top: 10px;
-  }
-  
-  .ant-form-item-cs .ant-form-item-control-wrapper{
-    display: inline-block;
-    vertical-align: middle;
-  }
-  
-  .ant-form-item-cs .ant-select-selection--single{
-    min-width: 100px;
-  }
-  
-  .min-select .ant-select-selection--single{
-    min-width: 70px;
-  }
-  
   
   .img-cover {
     background-position: center;
@@ -200,12 +107,12 @@ html, body, #root {
   }
 
   // 水平居中
-.box-center-hoz{
+.h-center{
   display: flex;
   justify-content: center;
 }
 // 垂直居中
-.box-center-ver{
+.v-center{
   display: flex;
   align-items: center;
 }
@@ -226,117 +133,32 @@ html, body, #root {
     background-color: #f0f0f0;
   }
   
-  .ant-advanced-search-form {
-    background: #fff;
-    border-top-right-radius: 6px;
-    border-top-left-radius: 6px;
-    margin-bottom: 5px;
+  a{
+    color: #1DA57A;
+    &:hover{
+      color: darken(#1DA57A, 10%);
+      text-decoration: underline;
+    }
   }
-  
-  .ant-advanced-search-form .ant-form-item {
-    display: flex;
-    margin-right: 5px !important;
-  }
-  
-  .ant-advanced-search-form .ant-form-item-control-wrapper {
-    flex: 1;
-  }
-  
-  
-  .ant-table-pagination.ant-pagination{
-    margin: 10px 0px !important;
-    padding-right: 14px;
-  }
-  /* .ant-advanced-search-form .ant-form-item {
-    margin-bottom: 10px !important;
-  } */
-  
-  .ant-page-header-title-view-extra {
-    top: 12px !important;
-    right: 20px !important;
-  }
-  
-  .ant-page-header-footer{
-    padding-top: 0px !important;
-  }
-  
-  .page-header-tab{
-    /* padding-left: 8px; */
-    /* background-color: #E9EEFA; */
-    padding: 0 24px;
-  }
-  
-  .page-header-tab .page-header-tab-item{
-    margin-right: 20px;
-    line-height: 1rem;
-    padding: 14px 0;
-    box-sizing: border-box;
-  }
-  
-  .page-header-tab .page-header-tab-item a{
-    display: block;
-    color: #333;
-  }
-  
-  .page-header-tab .page-header-tab-item a:hover{
-    color: #2F80ED;
-  }
-  
-  .page-header-tab .page-header-tab-item.active{
-    font-weight: 500;
-    color: #2F80ED;
-    border-bottom: 2px solid #2F80ED;
-  }
-  
-  .ant-page-header-has-footer{
-    padding-bottom: 0px !important;
-  }
-  
-  .reset-content-lh .ant-form-item-control{
-    line-height: 1.5 !important;
-  }
-  
-  .editable-cell {
-    position: relative;
-  }
-  
-  .editable-cell-value-wrap {
-    cursor: pointer;
-    width: 100px;
-    padding: 5px 12px;
-  }
-  
-  .editable-row:hover .editable-cell-value-wrap {
-    border: 1px solid #d9d9d9;
-    border-radius: 4px;
-    padding: 4px 11px;
-  }
-  
-  .row-item{
-    margin-bottom: 10px;
-  }
-  
-  .form-item-lh{
-    line-height: 32px !important;
-  }
-  
-  .outline-box{
-    position: relative;
-    border: 1px solid #ececec;
-    padding: 24px 14px 14px;
+
+  .ant-btn{
     border-radius: 2px;
-    margin-top: 30px;
   }
-  
-  .outline-box .title{
-    position: absolute;
-    top: -12px;
-    left: 5px;
-    font-weight: bold;
-    font-size: 14px;
-    padding: 0 10px;
-    color: #767e90;
-    background-color: #fff;
+.ant-btn-primary{
+  background-color: #1DA57A;
+  border-color: #1DA57A;
+  &:hover{
+    background-color: darken(#1DA57A, 10%);
+    border-color: darken(#1DA57A, 10%);
+  }
+}
+
+  .wenzhen-checkbox{
+    .ant-checkbox-checked{
+      +span{
+        color: orange;
+      }
+    }
   }
   
   .reset-p{
@@ -351,11 +173,7 @@ html, body, #root {
     font-weight: 500;
     /* color: #333; */
   }
-  
-  .editable-cell-value-wrap{
-    width: 100%;
-    min-height: 30px;
-  }
+
   
   .content-block{
     padding: 14px 20px; 
@@ -364,41 +182,6 @@ html, body, #root {
     border-radius: 5px;
   }
   
-  .tree-wrapper>ul>li>ul>li ul>li:first-child{
-    padding-top: 0px !important;
-  }
-  .tree-wrapper>ul>li>ul>li ul>li{
-    display: inline-block;
-    vertical-align: top;
-    padding: 0px;
-  }
-  .ant-tree li{
-    white-space: unset !important;
-  }
-  .ant-table-small > .ant-table-content > .ant-table-body{
-    margin: 0px !important;
-  }
-  .ant-page-header-heading-extra{
-    top: 11px !important;
-  }
-  
-  .payment-radio.ant-radio-button-wrapper{
-    height: auto !important;
-    margin: 10px 16px 10px 0px !important;
-    width: 130px !important;
-    padding: 10px 15px !important;
-    border-radius: 4px !important;
-    text-align: center;
-  }
-  
-  .payment-radio.ant-radio-button-wrapper:last-child{
-    margin-right: 0px !important;
-  }
-  
-  .table-cell-box{
-    max-height: 100px;
-    overflow-y: auto;
-  }
   
   .word-ellipsis {
     overflow: hidden;
@@ -421,283 +204,9 @@ html, body, #root {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
   }
-  
-  .site-input-group-wrapper .site-input-split {
-    background-color: #fff;
-  }
-  
-  .site-input-group-wrapper .site-input-right {
-    border-left-width: 0;
-  }
-  
-  .site-input-group-wrapper .site-input-right:hover {
-    border-left-width: 1px;
-  }
-  
-  iframe{
-    border: none;
-  }
-  
-  #side_menu{
-    height: calc(100% - 108px);
-    overflow-y: auto;
-    >.ant-menu{
-      height: 100%;
-    }
-    +.trigger-wrapper{
-      border-top: 1px solid rgb(255 255 255 / 10%);
-      cursor: pointer;
-      background-color: #001529;
-      .trigger {
-        display: inline-block;
-        vertical-align: middle;
-        font-size: 18px;
-        height: 54px;
-        line-height: 54px;
-        padding: 0 24px;
-        cursor: pointer;
-        transition: color .3s;
-        color: rgb(255 255 255 / 38%);
-        &:hover{
-          color: #2F80ED;
-        }
-      }
-    }
-  }
-  
-  // #side_menu .ant-menu-item{
-  //   display: inline-block;
-  //   vertical-align: middle;
-  //   width: 104px;
-  //   padding: 0px !important;
-  //   height: 32px;
-  //   line-height: 32px;
-  //   margin-bottom: 8px !important;
-  // }
-  
-  // #side_menu .ant-menu-sub{
-  //   padding-left: 24px;
-  //   padding-right: 5px;
-  //   background-color: #3A434F;
-  // }
-  
-  // #side_menu .ant-menu-sub .ant-menu-item-selected{
-  //   background: transparent;
-  // }
-  
-  // #side_menu .ant-menu-sub a{
-  //   padding: 10px 8px;
-  //   border-radius: 7px;
-  //   transition: background-color 0.2s ease-in-out;
-  // }
-  
-  // #side_menu .ant-menu-sub a:hover{
-  //   background-color: rgba(255, 255, 255, 0.12);
-  // }
-  
-  // #side_menu .ant-menu-sub .ant-menu-item-selected a{
-  //   background-color: #2F80ED;
-  // }
 
-  .header-tabs a{
-    display: inline-block;
-    margin-right: 20px;
-    padding: 10px 0;
-    color: #333;
-    border-bottom: 3px solid transparent;
-  }
-
-  .header-tabs a.active,
-  .header-tabs a:hover{
-    color: @primary-color;
-    border-bottom-color: @primary-color;
-  }
-  
   .ant-layout{
     background-color: #f3f6f9 !important;
   }
-  
-  .ant-layout-sider{
-    background-color: #ffffff !important;
-    border-right: 1px solid #f0f0f0;
-  }
-  
-  .ant-btn{
-    background: #E9EEFA;
-    border-color: #E9EEFA;
-    color: #2F80ED;
-  }
-  
-  .ant-btn-primary{
-    background: #2F80ED;
-    border-color: #2F80ED;
-    color: #fff;
-  }
-  
-  .ant-btn-link{
-    background: transparent;
-    border: none;
-  }
-  
-  .ant-modal-content{
-    border-radius: 6px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.04);
-  }
-  
-  .ant-modal-header{
-    border-radius: 6px 6px 0 0;
-    border: none;
-    padding-bottom: 0;
-    padding-top: 20px;
-  }
-  
-  .ant-modal-footer{
-    border: none;
-    padding-top: 0;
-    padding-bottom: 20px;
-  }
-  
-  .ant-empty-normal{
-    color: #bcc6dd !important;
-  }
-  
-  .ant-card{
-    border-radius: 6px !important;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.04) !important;
-  }
-  
-  .ant-card-head{
-    border-bottom: none !important;
-  }
-  
-  .ant-menu-vertical.ant-menu-sub{
-    max-height: calc(100vh - 100px) !important;
-  }
-  
-  .slick-dots{
-    bottom: auto !important;
-  }
-  
-  .slick-thumb li{
-    width: 60px !important;
-    height: 45px !important;
-  }
-  
-  .slick-thumb li.slick-active{
-    border: 2px solid #56ccf2;
-  }
-  
-  .ant-switch-checked .ant-switch-handle{
-    left: calc(100% - 18px - 2px) !important;
-  }
-  
-  .slick-next:before,
-  .slick-prev:before{
-    color: #607D8B !important;
-  } 
 
-  video{
-    appearance: none;
-    outline: none;
-  }
   
-  @media print {      
-    /* @page { margin: 10cm } */
-    body {
-      font: 13pt Georgia, "Times New Roman", Times, serif;
-      line-height: 1.3;
-      background: #fff !important;
-      color: #000;
-    }
-    
-    h1 {
-    font-size: 24pt;
-    }
-    
-    h2, h3, h4 {
-    font-size: 14pt;
-    margin-top: 25px;
-    }    
-     
-    a {
-        page-break-inside:avoid
-    }
-    blockquote {
-        page-break-inside: avoid;
-    }
-    h1, h2, h3, h4, h5, h6 { page-break-after:avoid; 
-         page-break-inside:avoid }
-    img { page-break-inside:avoid; 
-         page-break-after:avoid; }
-    table, pre { page-break-inside:avoid }
-    ul, ol, dl  { page-break-before:avoid }
-    
-    article a[href^="#"]:after {
-       content: "";
-    }
-    
-    a:not(:local-link):after {
-       content:" <" attr(href) "> ";
-    }
-        
-    /**
-     * Eingebundene Videos verschwinden lassen und den Whitespace der iframes auf null reduzieren.
-     */
-    .entry iframe, ins {
-        display: none;
-        width: 0 !important;
-        height: 0 !important;
-        overflow: hidden !important;
-        line-height: 0pt !important;
-        white-space: nowrap;
-    }
-    .embed-youtube, .embed-responsive {
-      position: absolute;
-      height: 0;
-      overflow: hidden;
-    }
-        
-    /* Unnötige Elemente ausblenden für den Druck */
-    
-    #header-widgets, nav, aside.mashsb-container, 
-    .sidebar, .mashshare-top, .mashshare-bottom, 
-    .content-ads, .make-comment, .author-bio, 
-    .heading, .related-posts, #decomments-form-add-comment, 
-    #breadcrumbs, #footer, .post-byline, .meta-single, 
-    .site-title img, .post-tags, .readability 
-    {
-    display: none;
-    }
-    
-    .entry:after {
-    content: "\ Alle Rechte vorbehalten. (c) 2014 - 2016 TechBrain - techbrain.de";
-    color: #bcc6dd !important;
-    font-size: 1em;
-    padding-top: 30px;
-    }
-    #header:before {
-    content: "\ Vielen herzlichen Dank für das Ausdrucken unseres Artikels. Wir hoffen, dass auch andere Artikel von uns Ihr Interesse wecken können.";
-    color: #777 !important;
-    font-size: 1em;
-    padding-top: 30px;
-    text-align: center !important;    
-    }
-    
-    /* Wichtige Elemente definieren */    
-    p, address, li, dt, dd, blockquote {
-    font-size: 100%
-    }
-    
-    /* Zeichensatz fuer Code Beispiele */
-    code, pre { font-family: "Courier New", Courier, mono}
-    
-    ul, ol {
-    list-style: square; margin-left: 18pt;
-    margin-bottom: 20pt;    
-    }
-    
-    li {
-      line-height: 1.6em;
-    }    
-        
-  }

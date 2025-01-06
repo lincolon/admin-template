@@ -1,0 +1,132 @@
+.consultItem {
+    margin: 0 10px 10px;
+    padding: 12px;
+    border: 1px solid #eee;
+    border-radius: 9px;
+    cursor: pointer;
+    &:hover{
+        background-color: #f8faff;
+    }
+}
+
+.consult-list{
+    height: calc(100% - 52px);
+}
+
+.chat-wrapper{
+    background-color: #fff;
+    border-left: 1px solid #e8e8e8;
+    border-right: 1px solid #e8e8e8;
+}
+
+.file-wrapper{
+    position: relative;
+    #upload-input{
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+    }
+}
+
+.toolbar{
+    height: 44px;
+    background-color: #f4f7ff;
+    border-top: 1px solid #e8e8e8;
+    display: flex;
+    align-items: center;
+    padding: 0 14px;
+}
+
+.conv-list{
+    background-color: #f8faff;
+    overflow-y: auto;
+}
+
+.conv-item{
+    // width: 65%;
+    padding: 10px 20px;
+    .conv-avatar{
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: beige;
+    }
+    .conv-content{
+        position: relative;
+        max-width: 40%;
+        font-size: 14px;
+        overflow: hidden;
+        margin-top: 5px;
+        .text{
+            padding: 10px;
+            color: #1a1a1a;
+        }
+        .image{
+            width: 100%;
+            display: block;
+        }
+        .conv-card{
+            width: 280px;
+            cursor: pointer;
+        }
+        .conv-prescription-card{
+            background-color: #fff;
+            .conv-prescription-card-content{
+                width: 280px;
+                height: 80px;
+                padding: 0 14px;
+                color: #fff;
+                background: url(../../assets/chat/prescription_bg.png) center no-repeat;
+                background-size: cover;
+            }
+            .conv-prescription-card-footer{
+                height: 40px;
+                padding: 0 14px;
+            }
+        }
+        
+    }
+    .status-box{
+        width: 40px;
+        align-items: flex-end;
+        padding-bottom: 6px;
+    }
+    &.other{
+        .conv-avatar{
+            margin-right: 12px;
+        }
+        .conv-content{
+            border-radius: 0 14px 14px;
+            color: #fff;
+            .text{
+                background-color: #006aff;
+                color: #fff;
+            }
+            .card-title{
+                padding: 8px 12px;
+                background-image: linear-gradient(90deg, #2097ff 0%, #006aff 100%);
+            }
+            .card-content{
+                box-sizing: border-box;
+                background: #fff;
+                color: #333;
+                padding: 10px 12px;
+            }
+        }
+    }
+    &.self{
+       direction: rtl;
+       .conv-avatar{
+            margin-left: 12px;
+       }
+       .conv-content{
+            direction: ltr;
+            background-color: rgb(255, 255, 255);
+            border-radius: 14px 0 14px 14px;
+            box-shadow: 0 1px 2px 0px rgba(0, 0, 0, 0.03);
+       }
+    }
+}

@@ -6,7 +6,7 @@ import styles from './style.less';
 class Exception extends React.PureComponent {
   static defaultProps = {
     backText: '返回首页',
-    redirect: '/app/dashboard',
+    redirect: '/app',
   };
 
   constructor(props) {

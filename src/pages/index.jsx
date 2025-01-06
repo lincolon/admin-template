@@ -3,9 +3,10 @@ import { useRoutes, Navigate, BrowserRouter } from 'react-router-dom'
 import { ConfigProvider } from 'antd';
 import zhCN from 'antd/lib/locale/zh_CN'; 
 
-import routes from '../config/routes'
+// import routes from '../config/routes'
 
 import LoginPage from './Login'
+import App from './App'
 import Page403 from './Errors/403';
 import NotFound from './Errors/404';
 import Page500 from './Errors/500';
@@ -23,8 +24,12 @@ const baseRoutes = [
             {
                 path: '',
                 element: <EntryPoint />,
+            },
+            {
+                path: 'app',
+                element: <App />,
             }
-        ].concat(routes)
+        ]
     },
     { path: '403', element: <Page403 /> },
     { path: '404', element: <NotFound /> },
@@ -35,7 +40,7 @@ const baseRoutes = [
 function EntryPoint(){
     // const isLogined = Cookie.get(projectConfig.token_name);
     const isLogined = true;
-    return !isLogined ? <Navigate to="login" replace /> : <Navigate to="dashboard" />
+    return !isLogined ? <Navigate to="login" replace /> : <Navigate to="app" />
 }
 
 function RoutesWrapper({routes}){
@@ -44,10 +49,20 @@ function RoutesWrapper({routes}){
 
 
 
-export default function App(){ 
+export default function Main(){ 
 
     return (
-        <ConfigProvider locale={zhCN}>
+        <ConfigProvider 
+            locale={zhCN}
+            theme={{
+                token: {
+                    colorPrimary: '#1DA57A',
+                    borderRadius: 2,
+                    borderRadiusSM: 2,
+                    borderRadiusLG: 2
+                },
+            }}
+        >
             <BrowserRouter>
                 <RoutesWrapper routes={baseRoutes}/>
             </BrowserRouter>

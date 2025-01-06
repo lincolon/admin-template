@@ -34,8 +34,8 @@ export default function TopHeader() {
   return (
     <section className="topHeaderWrapper">
       <div className="mgtBlock mgt-block" style={{color: '#2F80ED', marginLeft: 40}}>
-        <div style={{marginBottom: 4}}>管理员</div>
-        <div>{uglyPhone(userInfo?.phone)}</div>
+        <div style={{marginBottom: 4}}>{userInfo?.name}</div>
+        <div>{uglyPhone(userInfo?.mobilePhone)}</div>
       </div>
       <Tooltip placement="bottomRight" title="退出系统">
         <a className={`mgt-block logoutBtn`} style={{height: '100%', lineHeight: '54px'}} onClick={logout} >

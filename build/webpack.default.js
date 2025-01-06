@@ -11,8 +11,6 @@ const NODE_ENV = process.env.NODE_ENV
 
 const devMode = NODE_ENV === "development";
 
-console.log('NODE_ENV', NODE_ENV)
-
 // 根据环境来读取配置文件（本地环境和对应的环境）
 const dotenvFiles = ['.env.local', `.env.${NODE_ENV}.local`, `.env.${NODE_ENV}`, `.env`].filter(
     Boolean
@@ -51,6 +49,8 @@ module.exports = {
             '@modules': path.join(__dirname, '../node_modules'),
             '@service': path.join(__dirname, '../src/service'),
             '@pages': path.join(__dirname, '../src/pages'),
+            '@utils': path.join(__dirname, '../src/utils'),
+            '@components': path.join(__dirname, '../src/components'),
             '@constant': path.join(__dirname, '../src/constant'),
         }
     },

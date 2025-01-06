@@ -11,7 +11,7 @@ export default function Logo(){
 
     return (
         <section className="logoContainer">
-            <a onClick={() => {navigate('/dashboard', { replace: true })}}>
+            <a onClick={() => {navigate('/app', { replace: true })}}>
                 <span className={`logo img-cover mgt-block`}></span>
                 <h2 
                     className="mgt-block" 

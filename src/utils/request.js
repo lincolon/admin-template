@@ -2,11 +2,12 @@ import axios from 'axios';
 import { notification } from 'antd'
 import NProgress from 'nprogress';
 import Cookie from 'js-cookie';
-
-import { refreshToken } from '../service/common';
+import localforage from 'localforage';
 
 const hostApi = process.env.HOST_API;
 const token_name = process.env.TOKEN_NAME;
+
+console.log(hostApi);
 
 const requestQueen = {
   data: [],
@@ -49,11 +50,11 @@ export default function initRequest(){
   axios.interceptors.request.use(function (config) {
     // 在发送请求之前做些什么
     const authorization = {
-      Authorization: config.headers?.authorization
+      authorization: config.headers?.authorization
     };
 
     if(config.url.indexOf('/login') === -1){
-      authorization["Authorization"] = `Bearer ${Cookie.get(token_name)}`;
+      authorization["authorization"] = `Bearer ${Cookie.get(token_name)}`;
     }
 
     if(requestQueen.isLoading(config.url))return;
@@ -85,31 +86,33 @@ export default function initRequest(){
    
     requestQueen.remove(config.url);
     NProgress.done();
-    
-    if(+code === 403){
+
+    if([0, 200].includes(code)){
+      return {
+        success: true,
+        data: response.data.data,
+      };
+    }else if(+code === 8000){
       location.replace('/login');
-    } else if(+code === 402) {
+    } else if(+code === 1003) {
       console.log(config)
-      const {data: { access_token }} =  await refreshToken();
+      const access_token =  await refreshToken();
       Cookie.set(token_name, access_token);
-      axios.post(config.url, config.data, {
+      return axios.request({
+        url: config.url, 
+        data: config.data, 
+        params: config.params,
+        method: config.method,
         headers: {
-          Authorization: access_token
+          authorization:  `Bearer ${access_token}`
         }
       });
-    }else if(+code !== 0) {
+    }else {
       notification.error({
         message: msg
       })
       return Promise.reject({code, message: msg, url: config.url});
     }
-
-    return {
-      success: true,
-      data: response.data.data,
-      total: response.data.page.total,
-      extra: response.data.extra
-    };
   }, function (error) {
     
     NProgress.done();
@@ -118,4 +121,29 @@ export default function initRequest(){
     }
     return Promise.reject(error);
   });
+}
+
+async function refreshToken() {
+  const _accessToken = Cookie.get('accessToken');
+  const userInfo = await localforage.getItem('userInfo');
+  const refreshToken = await localforage.getItem('refreshToken');
+  const res = await axios.request({
+      url: hostApi +'/v2/auth/refresh-token',
+      method: 'POST',
+      header: {
+          'authorization': `Bearer ${_accessToken}`
+      },
+      data: {
+          refreshToken,
+          mobilePhone: userInfo.mobilePhone,
+          accountType: 'DOCTOR'
+      }
+  })
+  if([0,200].includes(res.data.code)){
+      localforage.setItem('accessToken', res.data.data.accessToken);
+      localforage.setItem('refreshToken', res.data.data.refreshToken);
+      return res.data.data.accessToken;
+  }else{
+    location.replace('/login');
+  }
 }
