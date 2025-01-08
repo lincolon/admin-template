@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Avatar, Divider, Image } from 'antd';
-import { RightOutlined, PhoneOutLined, LoadingOutlined, VideoCameraOutlined, AudioOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { RightOutlined, LoadingOutlined, VideoCameraOutlined, AudioOutlined, InfoCircleOutlined } from '@ant-design/icons';
 import { sendMessageToPatient } from "../service";
 
 // import { renderChatContent } from '../../../utils/helper'
@@ -11,11 +11,11 @@ const avatars = {
 }
 
 //问诊单卡片
-function ConsulationCard({ data }){
+function ConsulationCard({ data, onClick }){
     return (
         <div 
             className='conv-card' 
-            onClick={() => {}}
+            onClick={() => {onClick(data.consultationId)}}
         >
             <div className='flexbox card-title v-center'>
                 <div className='v-center light fz-15'>{data.patientName}</div>
@@ -40,15 +40,15 @@ function ConsulationCard({ data }){
 }
 
 // 处方单卡片
-function PrescriptionCard({ data }){
+function PrescriptionCard({ data, onClick }){
     return (
         <div
             className='conv-prescription-card'
-            onClick={() => {}}
+            onClick={() => {onClick(data.prescriptionId)}}
         >
             <div className='conv-prescription-card-content v-center'>
                 <img src={require('../../../assets/chat/prescription_icon.png')} className='inline-block' width="24" />
-                <span style={{marginLeft: 5}} className='inline-block fz-15 fz-weight'>单纯性肥胖</span>
+                <span style={{marginLeft: 5}} className='inline-block fz-15 fz-weight'>{data?.title}</span>
             </div>
             <div className='flexbox conv-prescription-card-footer v-center'>
                 <div className='flex1 fz-12 fz-gray'>查看处方详情</div>
@@ -95,7 +95,7 @@ function Audio({ url }) {
 }
 
 // 渲染会话内容
-function renderChatContent (msgContent) {
+function renderChatContent (msgContent, onConsultCardClick, onPrescriptionCardClick, onQuestionnaireCardClick) {
     const { MsgType, MsgContent } = msgContent;
     switch (MsgType) {
       case 'TIMTextElem': return <div className='conv-text text'>{MsgContent.Text}</div>;
@@ -103,15 +103,15 @@ function renderChatContent (msgContent) {
       case 'TIMSoundElem': 
         return <Audio url={MsgContent.Url} />;
       case 'TIMAudio': 
-        return <div className='text'><PhoneOutLined /> 语音通话时长</div>;
+        return <div className='text'><AudioOutlined /> 语音通话时长</div>;
       case 'TIMVideo': 
         return <div className='text'><VideoCameraOutlined /> 视频通话时长</div>;
       case 'TIMCustomElem': 
         const { data, type } = MsgContent;
         switch (type) {
-          case 'Consultation': return <ConsulationCard data={{...data, orderId: msgContent.orderId}} />; // 问诊单
-          case 'Prescription': return <PrescriptionCard data={data} />; // 处方单
-          case 'Questionnaire': return <QuestionnaireCard data={data} />; // 问诊表单
+          case 'Consultation': return <ConsulationCard data={{...data, orderId: msgContent.orderId}} onClick={onConsultCardClick} />; // 问诊单
+          case 'Prescription': return <PrescriptionCard data={data} onClick={onPrescriptionCardClick} />; // 处方单
+          case 'Questionnaire': return <QuestionnaireCard data={data} onClick={onQuestionnaireCardClick} />; // 问诊表单
           default: return null;
         };
       default: return '[未知消息]';
@@ -119,7 +119,16 @@ function renderChatContent (msgContent) {
 }
 
 // 会话内容组件
-function ConversationItem({ id, from, conversationId, lastChatId, MsgContent }) {
+function ConversationItem({ 
+    id, 
+    from,
+    conversationId,
+    lastChatId,
+    MsgContent,
+    onConsultCardClick,
+    onPrescriptionCardClick,
+    onQuestionnaireCardClick
+}) {
     const isDoctor = !from.includes('PATIENT');
     const avatar = isDoctor ? avatars.doctor : avatars.patient;
     const [ state, setState ] = useState({
@@ -163,7 +172,7 @@ function ConversationItem({ id, from, conversationId, lastChatId, MsgContent }) 
             className={`conv-item flexbox ${isDoctor ? 'self' : 'other'}`}
         >
             <Avatar size={40} className="conv-avatar" src={avatar} />
-            <div className="conv-content">{renderChatContent(MsgContent)}</div>
+            <div className="conv-content">{renderChatContent(MsgContent, onConsultCardClick, onPrescriptionCardClick, onQuestionnaireCardClick)}</div>
             {
                 isDoctor && <>
                 {

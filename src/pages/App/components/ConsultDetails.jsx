@@ -122,26 +122,35 @@ export default function ConsultDetails({ data }) {
                     key: '9',
                     label: '就诊结果',
                     children: data?.vResult || '--',
+                    span: 3,
                 },
                 {
                     key: '10',
                     label: '舌面照',
-                    children: data?.faceImages?.length > 0 ? <Image.PreviewGroup>{data.faceImages.map((img) => <Image width={80} src={img} alt="舌面照" />)}</Image.PreviewGroup> : '未上传',
+                    span: 3,
+                    children: data?.faceImages?.length > 0 ? <Image.PreviewGroup><Space size="small">{data.faceImages.map((img) => <Image width={50} src={img} alt="舌面照" />)}</Space></Image.PreviewGroup> : '未上传',
                 },
                 {
                     key: '11',
+                    labelStyle: {width: 80},
                     label: '相关的就诊病历、检查报告或化验单',
-                    children: data?.mrImages?.length > 0 ? <Image.PreviewGroup>{data.mrImages.map((img) => <Image width={80} src={img} alt="相关的就诊病历、检查报告或化验单" />)}</Image.PreviewGroup> : '未上传',
+                    span: 3,
+                    children: data?.mrImages?.length > 0 ? <Image.PreviewGroup><Space size="small">{data.mrImages.map((img) => <Image width={50} src={img} alt="相关的就诊病历、检查报告或化验单" />)}</Space></Image.PreviewGroup> : '未上传',
                 }
             ]}
         />
-        <Divider />
-        <div style={{textAlign: 'center'}}>
-            <Space size="large">
-                <Button onClick={handleRefuse} color="primary" variant='filled'>拒绝接诊</Button>
-                <Button onClick={handleAccept} type="primary">立即接诊</Button>
-            </Space>
-        </div>
+        {
+            data.status === 6 &&
+            <>
+                <Divider />
+                <div style={{textAlign: 'center'}}>
+                    <Space size="large">
+                        <Button onClick={handleRefuse} color="primary" variant='filled'>拒绝接诊</Button>
+                        <Button onClick={handleAccept} type="primary">立即接诊</Button>
+                    </Space>
+                </div>
+            </>
+        }
         <Drawer 
             title="问诊单" 
             open={questions.visible}

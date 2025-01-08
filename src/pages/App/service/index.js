@@ -34,6 +34,19 @@ export function getMedicineRoom(params) {
     return axios.get('/v1/orders/pharmacy', { params });
 }
 
+// 查询中医诊断、西医诊断、中医证型列表
+export function getDiagnosisList1(params) {
+    return axios.get('/v1/doctors/diagnosis/list', { params: { ...params, type: 1 } });
+}
+
+export function getDiagnosisList2(params) {
+    return axios.get('/v1/doctors/diagnosis/list', { params: { ...params, type: 2 } });
+}
+
+export function getDiagnosisList3(params) {
+    return axios.get('/v1/doctors/diagnosis/list', { params: { ...params, type: 3 } });
+}
+
 // 查询药品列表
 export function getMedicineList(params) {
     return axios.get('/v1/orders/medicine/search', { params });
@@ -87,8 +100,8 @@ export function uploadImage(file) {
     return axios.post('/v1/upload-file', { file, withFile: true });
 }
 
-// 发送处方单给患者
-export function sendPrescription(data) {
+// 开具处方单给患者
+export function addPrescription(data) {
     return axios.post('/v1/orders/prescription/add', data);
 }
 
@@ -111,7 +124,6 @@ export function getConsultationAnswers(params) {
 export function getConsultationTemplate(params) {
     return axios.get('/v1/doctors/question/detail', { params });
 }
-
 
 // 获取问诊单问题
 export function getPreConsultation(params) {

@@ -1,10 +1,12 @@
 import {FileImageOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Segmented, Input, Space, Tooltip, Button, Modal, message } from 'antd';
+import { Segmented, Input, Space, Tooltip, Button, Modal, message, Form, Select, Divider } from 'antd';
 import React, { useEffect, useState, useRef } from 'react';
 import TencentCloudChat from '@tencentcloud/chat';
 import ConsultItem from './components/ConsultItem';
 import ConversationItem from './components/ConversationItem';
 import ConsultDetails from './components/ConsultDetails';
+
+import useSelectSearch from '../../hooks/useSelectSearch';
 
 import './style.less';
 import localforage from 'localforage';
@@ -14,8 +16,15 @@ import {
     getChatHistory,
     acceptOrRefusePaint,
     uploadImage,
-    getConsultationDetails
+    getConsultationDetails,
+    getDiagnosisList1,
+    getDiagnosisList2,
+    getDiagnosisList3,
+    getJixingList,
+    getMedicineList
 } from './service';
+import { DrawerForm, ProFormSelect, ProFormText, ProFormGroup, ProFormTextArea, ProFormDependency } from '@ant-design/pro-form';
+import { EditableProTable } from '@ant-design/pro-table';
 
 function getImgs(data, props) {
     const res = [];
@@ -35,9 +44,11 @@ export default function Dashboard(){
     const chatRef = useRef();
     const convListRef = useRef();
     const convRef = useRef();
+    const formRef = useRef();
+    const [ visible, setVisible ] = useState(false);
     const [ tabvalue, setTabvalue ] = useState(6);
     const [ inputValue, setInputValue ] = useState('');
-    const [ acceptStatus, setAcceptStatus ] = useState(0);
+    const [ convStatus, setConvStatus ] = useState(0);
     const [ conversationId, setConversationId ] = useState('');
     const [ consultData, updateConsultData ] = useState({visible: false, data: null });
     const [ chatData, setChatData ] = useState({
@@ -45,6 +56,33 @@ export default function Dashboard(){
         data: [],
         pageInfo: {}
     });
+
+    const [ jxOptions, searchJx ] = useSelectSearch({
+        service: getJixingList,
+        labelKey: 'name',
+        keywords: 'keywords',
+    })
+
+    const [ zyOptions, searchZy, loadingZy, handleZyDropdownVisibleChange ] = useSelectSearch({
+        service: getDiagnosisList1,
+        labelKey: (data) => `${data.diseaseCode}-${data.diseaseName}`,
+        keywords: 'keywords',
+        auto: false,
+    })
+
+    const [ xyOptions, searchXy, loadingXy, handleXyDropdownVisibleChange ] = useSelectSearch({
+        service: getDiagnosisList2,
+        labelKey: (data) => `${data.diseaseCode}-${data.diseaseName}`,
+        keywords: 'keywords',
+        auto: false,
+    })
+
+    const [ zxOptions, searchZx, loadingZx, handleZxDropdownVisibleChange ] = useSelectSearch({
+        service: getDiagnosisList3,
+        labelKey: (data) => `${data.diseaseCode}-${data.diseaseName}`,
+        keywords: 'keywords',
+        auto: false,
+    })
 
     useEffect(() => {
         chatRef.current = TencentCloudChat.create({
@@ -99,7 +137,7 @@ export default function Dashboard(){
         status,
         conversationId
     }) => {
-
+        setConvStatus(status)
         if(status === 6){
             const res = await getConsultationDetails({consultationId: id})
             updateConsultData({
@@ -111,8 +149,11 @@ export default function Dashboard(){
                 }
             });
         }else{
+            if(!conversationId){
+                message.error('暂无会话信息');
+                return;
+            }
             setConversationId(conversationId);
-            setAcceptStatus(0);
             const convStatus = await getConversationStatus({conversationId});
             const { data } = await getChatHistory({conversationId, page: 1, pageSize: 30});
             const historyMsg = data.items.reverse();
@@ -122,6 +163,18 @@ export default function Dashboard(){
                 pageInfo: data.pageInfo,
             })
         }
+    }
+
+    const handleConsultClick = async (consultationId) => {
+        const res = await getConsultationDetails({consultationId})
+        updateConsultData({
+            visible: true,
+            data: {
+                ...res.data,
+                faceImages: getImgs(res.data, ['tongue', 'face']),
+                mrImages: getImgs(res.data, ['mr'])
+            }
+        });
     }
 
     const handleSendMsg = async () => {
@@ -154,7 +207,6 @@ export default function Dashboard(){
     const handleAccept = async (type) => {
         if(type === 'accept'){
             const { data } = await acceptOrRefusePaint({conversationId, type: 2});
-            setAcceptStatus(1);
         } else {
             // 拒绝请弹窗输入原因
             let reason;
@@ -169,11 +221,25 @@ export default function Dashboard(){
                         return;
                     }
                     await acceptOrRefusePaint({conversationId, type: 7, reason});
-                    setAcceptStatus(-1);
                 },
             });
             
         }
+    }
+
+    // 辨证开方
+    const handleKaifang = async () => {
+        setVisible(true);
+    }
+
+    // 补填问诊单
+    const handleAddConsult = async () => {
+        
+    }
+
+    // 退款
+    const handleRefund = async () => {
+        
     }
 
     useEffect(() => {
@@ -213,6 +279,9 @@ export default function Dashboard(){
                         conversationId={item.conversationId}
                         MsgContent={item.MsgContent}
                         lastChatId={chatData.lastChatId}
+                        onConsultCardClick={handleConsultClick}
+                        onPrescriptionCardClick={handleConsultClick}
+                        onQuestionnaireCardClick={handleConsultClick}
                     />
                 ))
             }
@@ -236,19 +305,13 @@ export default function Dashboard(){
                 </div>
                 <div>
                     <Space size={14}>
+                        
                         {
-                           acceptStatus === 0 && 
+                            // convStatus === 2 && 
                             <>
-                                <Button size='small' onClick={()=>handleAccept('accept')}>接诊</Button>
-                                <Button size='small' onClick={()=>handleAccept('refuse')}>拒诊</Button>
-                            </>
-                        }
-                        {
-                            acceptStatus === 1 && <>
-                                <Button size='small'>辨证开方</Button>
-                                <Button size='small'>辨证开方</Button>
-                                <Button size='small'>补填问诊单</Button>
-                                <Button size='small'>退款</Button>
+                                <Button size='small' color='primary' variant='filled' onClick={handleKaifang}>辨证开方</Button>
+                                <Button size='small' color='primary' variant='filled' onClick={handleAddConsult}>补填问诊单</Button>
+                                <Button size='small' color='danger' variant='filled' onClick={handleRefund}>退款</Button>
                             </>
                         }
                     </Space>
@@ -262,7 +325,7 @@ export default function Dashboard(){
                     rows={8}
                     variant="borderless" 
                     value={inputValue}
-                    disabled={!conversationId}
+                    disabled={!convStatus === 2}
                     onChange={(e) => {setInputValue(e.target.value)}}
                     onPressEnter={handleSendMsg}
                 />
@@ -270,7 +333,7 @@ export default function Dashboard(){
                     <Button 
                         type='primary' 
                         onClick={handleSendMsg}
-                        disabled={!inputValue || !conversationId}
+                        disabled={!inputValue || !convStatus === 2}
                     >发送</Button>
                 </div>
             </div>
@@ -286,9 +349,139 @@ export default function Dashboard(){
             footer={null}
             width={1000}
             open={consultData.visible}
+            onCancel={() => updateConsultData({...consultData, visible: false})}
         >
             <ConsultDetails data={consultData.data} />
         </Modal>
+        <DrawerForm 
+            layout='vertical'
+            title="开具处方"
+            width={760}
+            open={visible}
+            formRef={formRef}
+        >
+            <ProFormGroup title="病情诊断">
+                <ProFormSelect
+                    label="西医诊断"
+                    name="xyzd"
+                    width="sm"
+                    options={zyOptions}
+                    placeholder="请输入西医诊断"
+                    showSearch
+                    allowClear
+                    notFoundContent={null}
+                    filterOption={false}
+                    fieldProps={{
+                        loading: loadingZy,
+                        onSearch: searchZy,
+                    }}
+                    rules={[{required: true, message: '请输入关键词搜索'}]} 
+                />
+                <ProFormSelect
+                    label="中医诊断"
+                    name="zyzd"
+                    width="sm"
+                    options={xyOptions}
+                    placeholder="请输入西医诊断"
+                    showSearch
+                    allowClear
+                    notFoundContent={null}
+                    filterOption={false}
+                    fieldProps={{
+                        loading: loadingXy,
+                        onSearch: searchXy,
+                    }}
+                    rules={[{required: true, message: '请输入关键词搜索'}]} 
+                />
+                <ProFormSelect
+                    label="中医证型"
+                    name="zybz"
+                    width="sm"
+                    options={zxOptions}
+                    placeholder="请输入西医诊断"
+                    showSearch
+                    allowClear
+                    notFoundContent={null}
+                    filterOption={false}
+                    fieldProps={{
+                        loading: loadingZx,
+                        onSearch: searchZx,
+                    }}
+                    rules={[{required: true, message: '请输入关键词搜索'}]} 
+                />
+            </ProFormGroup>
+            <ProFormGroup title="开方">
+                <ProFormSelect
+                    label="选择剂型"
+                    name="dosageFormId"
+                    width="sm"
+                    options={jxOptions}
+                    placeholder="请输入西医诊断"
+                    showSearch
+                    allowClear
+                    notFoundContent={null}
+                    rules={[{required: true, message: '请输入关键词搜索'}]} 
+                />
+                <ProFormDependency name={['dosageFormId']}>
+                {
+                    ({dosageFormId}) => {
+                        const opts = jxOptions.find(item => item.value === dosageFormId);
+                        formRef.current?.setFieldValue('cfType', null);
+                        return (
+                            <ProFormSelect
+                                label="选择药房"
+                                name="cfType"
+                                width="sm"
+                                options={opts ? opts.sourceData.pharmacy.map(item => ({label: item.name, value: item.pharmacyNumber})) : []}
+                                placeholder="请选择药房"
+                                allowClear
+                                notFoundContent={null}
+                                rules={[{required: true, message: '请选择药房'}]} 
+                            />
+                        )
+                    }
+                }
+                </ProFormDependency>
+                <ProFormDependency name={['dosageFormId']}>
+                {
+                    ({dosageFormId}) => {
+                        const opts = jxOptions.find(item => item.value === dosageFormId);
+                        return ( opts && opts.sourceData.children.length > 0 &&
+                            <ProFormSelect
+                                label="代煎设置"
+                                name="dosageFormSubId"
+                                width="sm"
+                                options={opts ? opts.sourceData.children.map(item => ({label: item.name, value: item.id})) : []}
+                                placeholder="请选择代煎方式"
+                                allowClear
+                                notFoundContent={null}
+                                rules={[{required: true, message: '请选择代煎方式'}]} 
+                            />
+                        )
+                    }
+                }
+                </ProFormDependency>
+            </ProFormGroup>
+            <ProFormDependency name={['dosageFormId', 'cfType']}>
+                {
+                    ({dosageFormId, cfType}) => {
+                        const opts = jxOptions.find(item => item.value === dosageFormId);
+                        const isZy = opts && opts.sourceData.children.length > 0;
+                        return (dosageFormId && cfType) ? isZy ? (
+                            <Form.Item name="rp" noStyle>
+                                <ZyTable dosageFormId={dosageFormId} pharmacyNumber={cfType} />
+                            </Form.Item>
+                        ) : (
+                            <Form.Item name="rp" noStyle>
+                                <XyTable dosageFormId={dosageFormId} pharmacyNumber={cfType}/>
+                            </Form.Item>
+                        ) : null;
+                    }
+                }
+            </ProFormDependency>
+            <Divider />
+            <ProFormTextArea label="补充说明" name="remarks" />
+        </DrawerForm>
     </div>
 }
 
@@ -309,12 +502,187 @@ function formatLocalChatData(payload, MsgType) {
         }
       }
     }
-  }
+}
   
-  function formatOriginChatData(id, from, payload) {
+function formatOriginChatData(id, from, payload) {
     return {
       id,
       from,
       MsgContent: payload
     }
-  }
+}
+
+// 中药可编辑表格组件
+function ZyTable({ value = [], onChange, pharmacyNumber, dosageFormId }) {
+
+    const [editableKeys, setEditableRowKeys] = useState([]);
+
+    const [ options, handleSearch, loading ] = useSelectSearch({
+        service: getMedicineList,
+        labelKey: 'name',
+        keywords: 'keywords',
+        auto: false,
+        params: {
+            eastOrWest: 1,
+            keywords: '',
+            dosageFormId,
+            pharmacyNumber
+        }
+    })
+
+    const handleChange = (val) => {
+        if (!val) return;
+        const { sourceData } = options.find(item => item.value === val);
+        onChange(value.concat({...sourceData, count: 0}));
+    }
+
+    const columns = [
+        {
+            title: '药材名称',
+            dataIndex: 'name',
+        },
+        {
+            title: '药材编码',
+            dataIndex: 'serialNumber',
+        },
+        {
+            title: '单价',
+            dataIndex: 'price',
+        },
+        {
+            title: '数量',
+            valueType: 'digit',
+            dataIndex: 'count',
+            editable: true
+        },
+        {
+            title: '单位',
+            dataIndex: 'unit',
+        },
+    ]
+
+    console.log('value:', value)
+
+    return (
+        <section style={{background: '#1da57a'}} >
+            <Select 
+                style={{width: 300, margin: 10}}
+                options={options}
+                onChange={handleChange}
+                placeholder="请输入中药名称或者首字母(大写)搜索药材"
+                allowClear
+                notFoundContent={null}
+                filterOption={false}
+                showSearch
+                onSearch={handleSearch}
+                loading={loading}
+            />
+            <EditableProTable 
+                size='small'
+                bordered
+                value={value}
+                columns={columns}
+                onChange={(v) => onChange(v)}
+                recordCreatorProps={false}
+                editable={{
+                    type: 'multiple',
+                    editableKeys,
+                    actionRender: (row, config, defaultDoms) => {
+                        return [defaultDoms.delete];
+                    },
+                    onValuesChange: (record, recordList) => {
+                        console.log('record:', recordList)
+                        onChange(recordList);
+                    },
+                    onChange: setEditableRowKeys,
+                }}
+            />
+        </section>
+    )
+}
+
+// 西药可编辑表格组件
+function XyTable({ value, onChange, pharmacyNumber, dosageFormId }) {
+
+    const [editableKeys, setEditableRowKeys] = useState([]);
+
+    const [ options, handleSearch, loading ] = useSelectSearch({
+        service: getMedicineList,
+        keywords: 'keywords',
+        auto: false,
+        params: {
+            eastOrWest: 2,
+            dosageFormId,
+            pharmacyNumber
+        }
+    })
+
+    const handleChange = (value) => {
+
+    }
+
+    const columns = [
+        {
+            title: '药材名称',
+            dataIndex: 'name',
+            readyOnly: true,
+        },
+        {
+            title: '药材编码',
+            dataIndex: 'serialNumber',
+            readyOnly: true,
+        },
+        {
+            title: '单价',
+            dataIndex: 'price',
+            readyOnly: true,
+        },
+        {
+            title: '数量',
+            dataIndex: 'count',
+        },
+        {
+            title: '单位',
+            dataIndex: 'unit',
+            readyOnly: true,
+        },
+    ]
+
+    return (
+        <section 
+            style={{background: '#1da57a'}}
+        >
+        <Select 
+            style={{width: 300, margin: 10}}
+            options={options}
+            onChange={handleChange}
+            placeholder="请输入药品首字母(大写)关键字搜索"
+            allowClear
+            showSearch
+            notFoundContent={null}
+            filterOption={false}
+            onSearch={handleSearch}
+            loading={loading}
+        />
+        <EditableProTable 
+            size='small'
+            bordered
+            dataSource={value || []}
+            columns={columns}
+            onChange={(v) => onChange(v)}
+            recordCreatorProps={false}
+            editable={{
+                type: 'multiple',
+                editableKeys,
+                actionRender: (row, config, defaultDoms) => {
+                    return [defaultDoms.delete];
+                },
+                onValuesChange: (record, recordList) => {
+                    onChange(recordList);
+                },
+                onChange: setEditableRowKeys,
+            }}
+        />
+        </section>
+    )
+}
