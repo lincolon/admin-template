@@ -54,7 +54,7 @@ export function getMedicineList(params) {
 
 // 获取问诊单列表
 export function getConsultationList(params) {
-    return axios.get('/v1/doctors/consultation/list', { params });
+    return axios.get('/v1/doctors/consultation/list', { params, hideLoading: true });
 }
 // 获取问诊列表
 export function dataAnalyses(data) {

@@ -2,7 +2,7 @@
 import { Divider, Space, Tag } from 'antd';
 
 import { getConsultationList } from '../service'
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 const types =  {
     '1': {text: '图文问诊', color: '#165dff'},
@@ -10,13 +10,14 @@ const types =  {
     '3': {text: '视频问诊', color: '#00c6a2'}
 };
 
-export default function ConsultItem({ type, onClick }) {
+export default function ConsultItem({ type, onClick, onUpdateCount }) {
+
+    const timerRef = useRef();
 
     const [ state, setState ] = useState({
         list: [],
         pageInfo: {}
     })
-
 
     useEffect(() => {
         getConsultationList({ status: type }).then(res => {
@@ -25,6 +26,24 @@ export default function ConsultItem({ type, onClick }) {
                 pageInfo: res.data.pageInfo,
             })
         })
+        if(timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+        timerRef.current = setInterval(() => {
+            getConsultationList({ status: 6 }).then(res => {
+                console.log('_type', type);
+                if(type === 6){
+                    setState({
+                        list: res.data.items,
+                        pageInfo: res.data.pageInfo,
+                    })
+                }
+                if(res.data?.items?.length){
+                    onUpdateCount(res.data.items.length);
+                }
+            })
+        }, 1000 * 5);
+
     }, [type])
 
   return state.list.map(item => {

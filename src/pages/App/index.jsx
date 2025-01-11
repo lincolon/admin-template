@@ -1,5 +1,5 @@
 import {FileImageOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Segmented, Input, Space, Tooltip, Button, Modal, message, Form, Select, Divider, InputNumber, Descriptions, Tag } from 'antd';
+import { Segmented, Input, Space, Tooltip, Button, Modal, message, Form, Select, Divider, InputNumber, Descriptions, Tag, Badge } from 'antd';
 import React, { useEffect, useState, useRef } from 'react';
 import TencentCloudChat from '@tencentcloud/chat';
 import ConsultItem from './components/ConsultItem';
@@ -52,6 +52,7 @@ export default function Dashboard(){
     const [ tabvalue, setTabvalue ] = useState(6);
     const [ inputValue, setInputValue ] = useState('');
     const [ convStatus, setConvStatus ] = useState(0);
+    const [ standbyCount, updateStandbyCount ] = useState(0);
     const [ conversationData, setConversationData ] = useState({
         doctorId: '',
         patientId: '',
@@ -65,7 +66,7 @@ export default function Dashboard(){
         pageInfo: {}
     });
 
-    const [ jxOptions, searchJx ] = useSelectSearch({
+    const [ jxOptions ] = useSelectSearch({
         service: getJixingList,
         labelKey: 'name',
         keywords: 'keywords',
@@ -274,7 +275,7 @@ export default function Dashboard(){
                     block
                     onChange={(value) => setTabvalue(value)}
                     options={[
-                        {value: 6, label: '待接诊'},
+                        {value: 6, label: <Badge count={standbyCount} overflowCount={10}>待接诊</Badge>},
                         {value: 2, label: '问诊中'},
                         {value: 3, label: '已结束'},
                     ]}
@@ -284,6 +285,7 @@ export default function Dashboard(){
                 <ConsultItem 
                     type={tabvalue} 
                     onClick={(data) => handleChoosePainter(data)}
+                    onUpdateCount={(count) => setStandbyCount(count)}
                 />
             </div>
         </div>
@@ -436,7 +438,7 @@ export default function Dashboard(){
                     name="dosageFormId"
                     width="sm"
                     options={jxOptions}
-                    placeholder="请输入西医诊断"
+                    placeholder="请选择剂型"
                     showSearch
                     allowClear
                     onChange={() => {

@@ -60,7 +60,12 @@ export default function initRequest(){
     if(requestQueen.isLoading(config.url))return;
 
     requestQueen.push(config.url);
-    NProgress.start();
+
+    console.log('config.hideLoading:', config.hideLoading);
+
+    if(!config.hideLoading){
+      NProgress.start();
+    }
 
     return {
       ...config,
@@ -85,7 +90,9 @@ export default function initRequest(){
     const { config } = response;
    
     requestQueen.remove(config.url);
-    NProgress.done();
+    if(!config.hideLoading){
+      NProgress.done();
+    }
 
     if([0, 200].includes(code)){
       return {
@@ -93,9 +100,8 @@ export default function initRequest(){
         data: response.data.data,
       };
     }else if(+code === 8000){
-      // location.replace('/login');
+      location.replace('/login');
     } else if(+code === 1003) {
-      console.log(config)
       const access_token =  await refreshToken();
       Cookie.set(token_name, access_token);
       return axios.request({
@@ -140,9 +146,9 @@ async function refreshToken() {
       }
   })
   if([0,200].includes(res.data.code)){
-      localforage.setItem('accessToken', res.data.data.accessToken);
-      localforage.setItem('refreshToken', res.data.data.refreshToken);
-      return res.data.data.accessToken;
+      localforage.setItem('accessToken', res.data.accessToken);
+      localforage.setItem('refreshToken', res.data.refreshToken);
+      return res.data.accessToken;
   }else{
     location.replace('/login');
   }
