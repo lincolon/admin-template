@@ -356,7 +356,7 @@ export default function Dashboard(){
              }
         </div>
         <div style={{height: '100%', width: 300, background: '#fff'}}>
-
+            
         </div>
         <Modal
             centered
