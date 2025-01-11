@@ -305,7 +305,7 @@ export default function Dashboard(){
                 ))
             }
             </div>
-            <div style={{background: '#f0f0f0', margin: '6px 6px 0', borderRadius: 4}}>
+            <div style={{background: '#f0f0f0', margin: 6, borderRadius: 4}}>
                 <Input.TextArea
                     placeholder={conversationData.conversationId ? "请输入消息，按回车键发送消息" : "请选择患者进行聊天"}
                     rows={8}
@@ -344,19 +344,17 @@ export default function Dashboard(){
                     </div>
                 </div>
             </div>
-            <div style={{padding: 10}}>
-                <Space size="small">
-                    {
-                        convStatus === 1 && 
-                        <>
-                            <Button type='primary' onClick={() => setVisible(true)}>辨证开方</Button>
-                            <Button type='primary' onClick={() => setVisible(true)}>视频通话</Button>
-                            <Button type='primary' onClick={handleAddConsult}>补填问诊单</Button>
-                            {/* <Button onClick={handleRefund}>退款</Button> */}
-                        </>
-                    }
-                </Space>
-            </div>
+            {
+                convStatus === 1 && 
+                <div style={{padding: '4px 10px 10px'}}>
+                    <Space size="small">
+                        <Button type='primary' onClick={() => setVisible(true)}>辨证开方</Button>
+                        <Button type='primary' onClick={() => setVisible(true)}>视频通话</Button>
+                        <Button type='primary' onClick={handleAddConsult}>补填问诊单</Button>
+                        {/* <Button onClick={handleRefund}>退款</Button> */}
+                    </Space>
+                </div>
+             }
         </div>
         <div style={{height: '100%', width: 300, background: '#fff'}}>
 
