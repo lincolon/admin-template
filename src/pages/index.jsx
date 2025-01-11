@@ -56,10 +56,7 @@ export default function Main(){
             locale={zhCN}
             theme={{
                 token: {
-                    colorPrimary: '#1DA57A',
-                    borderRadius: 2,
-                    borderRadiusSM: 2,
-                    borderRadiusLG: 2
+                    colorPrimary: '#165DFF',
                 },
             }}
         >

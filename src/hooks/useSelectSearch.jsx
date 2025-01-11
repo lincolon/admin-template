@@ -25,7 +25,6 @@ export default function useSelectSearch({ service, keywords, labelKey, valueKey 
 
     const searchHandler = useMemo(() => {
         return debounce(async (val) => {
-            console.log(val);
             if(!val)return;
             setLoading(true);
             const { data } = await service({page: 1, page_size: 20, ...params, [keywords]: val});

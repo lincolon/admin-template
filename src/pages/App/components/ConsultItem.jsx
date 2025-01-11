@@ -5,9 +5,9 @@ import { getConsultationList } from '../service'
 import { useEffect, useState } from 'react';
 
 const types =  {
-    '1': {text: '图文问诊', color: '#77ACDF'},
-    '2': {text: '音频问诊', color: '#FFCE61'},
-    '3': {text: '视频问诊', color: '#95E2E4'}
+    '1': {text: '图文问诊', color: '#165dff'},
+    '2': {text: '音频问诊', color: '#bf6dff'},
+    '3': {text: '视频问诊', color: '#00c6a2'}
 };
 
 export default function ConsultItem({ type, onClick }) {
@@ -31,9 +31,9 @@ export default function ConsultItem({ type, onClick }) {
         const [ type, _ ] = item.type.split('-');
         return (
         <div className='consultItem' onClick={() => onClick(item)} key={item.id}>
-            <div>
+            <div style={{color: '#0C2556', fontWeight: 500}}>
                 <Space size={10}>
-                    <span className='fz-bold'>{item.patientName}</span>
+                    <span>{item.patientName}</span>
                     <span>{item.patientGender === 1 ? '男' : '女'}</span>
                     <span>{item.patientAge}岁</span>
                 </Space>

@@ -1,5 +1,5 @@
 import {FileImageOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Segmented, Input, Space, Tooltip, Button, Modal, message, Form, Select, Divider } from 'antd';
+import { Segmented, Input, Space, Tooltip, Button, Modal, message, Form, Select, Divider, InputNumber, Descriptions, Tag } from 'antd';
 import React, { useEffect, useState, useRef } from 'react';
 import TencentCloudChat from '@tencentcloud/chat';
 import ConsultItem from './components/ConsultItem';
@@ -21,10 +21,13 @@ import {
     getDiagnosisList2,
     getDiagnosisList3,
     getJixingList,
-    getMedicineList
+    getMedicineList,
+    getMedicineDetails,
+    addPrescription
 } from './service';
 import { DrawerForm, ProFormSelect, ProFormText, ProFormGroup, ProFormTextArea, ProFormDependency } from '@ant-design/pro-form';
 import { EditableProTable } from '@ant-design/pro-table';
+import dayjs from 'dayjs';
 
 function getImgs(data, props) {
     const res = [];
@@ -49,7 +52,12 @@ export default function Dashboard(){
     const [ tabvalue, setTabvalue ] = useState(6);
     const [ inputValue, setInputValue ] = useState('');
     const [ convStatus, setConvStatus ] = useState(0);
-    const [ conversationId, setConversationId ] = useState('');
+    const [ conversationData, setConversationData ] = useState({
+        doctorId: '',
+        patientId: '',
+        conversationId: '',
+    });
+    const [ preview, setPreviewData ] = useState({visible: false, data: null });
     const [ consultData, updateConsultData ] = useState({visible: false, data: null });
     const [ chatData, setChatData ] = useState({
         lastChatId: '',
@@ -63,22 +71,25 @@ export default function Dashboard(){
         keywords: 'keywords',
     })
 
-    const [ zyOptions, searchZy, loadingZy, handleZyDropdownVisibleChange ] = useSelectSearch({
+    const [ zyOptions, searchZy, loadingZy ] = useSelectSearch({
         service: getDiagnosisList1,
+        valueKey: 'diseaseCode',
         labelKey: (data) => `${data.diseaseCode}-${data.diseaseName}`,
         keywords: 'keywords',
         auto: false,
     })
 
-    const [ xyOptions, searchXy, loadingXy, handleXyDropdownVisibleChange ] = useSelectSearch({
+    const [ xyOptions, searchXy, loadingXy ] = useSelectSearch({
         service: getDiagnosisList2,
+        valueKey: 'diseaseCode',
         labelKey: (data) => `${data.diseaseCode}-${data.diseaseName}`,
         keywords: 'keywords',
         auto: false,
     })
 
-    const [ zxOptions, searchZx, loadingZx, handleZxDropdownVisibleChange ] = useSelectSearch({
+    const [ zxOptions, searchZx, loadingZx ] = useSelectSearch({
         service: getDiagnosisList3,
+        valueKey: 'diseaseCode',
         labelKey: (data) => `${data.diseaseCode}-${data.diseaseName}`,
         keywords: 'keywords',
         auto: false,
@@ -135,7 +146,12 @@ export default function Dashboard(){
     const handleChoosePainter = async ({
         id,
         status,
-        conversationId
+        doctorId,
+        patientId,
+        conversationId,
+        patientName,
+        patientGender,
+        patientAge,
     }) => {
         setConvStatus(status)
         if(status === 6){
@@ -153,10 +169,18 @@ export default function Dashboard(){
                 message.error('暂无会话信息');
                 return;
             }
-            setConversationId(conversationId);
             const convStatus = await getConversationStatus({conversationId});
             const { data } = await getChatHistory({conversationId, page: 1, pageSize: 30});
             const historyMsg = data.items.reverse();
+            setConversationData({
+                doctorId,
+                patientId,
+                conversationId,
+                patientName,
+                patientGender,
+                patientAge,
+                visitNo: convStatus.data.visitNo
+            });
             setChatData({ 
                 lastChatId: 'bottom',
                 data: historyMsg, 
@@ -178,35 +202,35 @@ export default function Dashboard(){
     }
 
     const handleSendMsg = async () => {
-        if(!inputValue || !conversationId) return;
+        if(!inputValue || !conversationData.conversationId) return;
         const payload = formatLocalChatData({
             Text: inputValue,
           }, 'TIMTextElem');
         setInputValue('');
         setChatData({
           ...chatData,
-          data: chatData.data.concat({...payload, conversationId}),
+          data: chatData.data.concat({...payload, conversationId: conversationData.conversationId}),
           lastChatId: `item_${payload.id}`,
         })
     }
 
     const handleSendImage = async () => {
         const file = document.getElementById('upload-input').files[0];
-        if(!file || !conversationId) return;
+        if(!file || !conversationData.conversationId) return;
         const { data } = await uploadImage(file);
         const payload = formatLocalChatData({
             Url: data.url,
           }, 'TIMImageElem');
         setChatData({
           ...chatData,
-          data: chatData.data.concat({...payload, conversationId}),
+          data: chatData.data.concat({...payload, conversationId: conversationData.conversationId}),
           lastChatId: `item_${payload.id}`,
         })
     }
 
     const handleAccept = async (type) => {
         if(type === 'accept'){
-            const { data } = await acceptOrRefusePaint({conversationId, type: 2});
+            const { data } = await acceptOrRefusePaint({conversationId: conversationData.conversationId, type: 2});
         } else {
             // 拒绝请弹窗输入原因
             let reason;
@@ -220,16 +244,11 @@ export default function Dashboard(){
                         message.warning('请输入拒绝原因');
                         return;
                     }
-                    await acceptOrRefusePaint({conversationId, type: 7, reason});
+                    await acceptOrRefusePaint({conversationId: conversationData.conversationId, type: 7, reason});
                 },
             });
             
         }
-    }
-
-    // 辨证开方
-    const handleKaifang = async () => {
-        setVisible(true);
     }
 
     // 补填问诊单
@@ -286,56 +305,57 @@ export default function Dashboard(){
                 ))
             }
             </div>
-            <div className='toolbar flexbox'>
-                {
-                    conversationId &&
-                <>
-                <div className='flex1'>
-                    <Space size={20}>
-                        <Tooltip title="发送图片">
-                            <div className='file-wrapper'>
-                                <FileImageOutlined style={{color: '#999', fontSize: 20, cursor: 'pointer'}} />
-                                <input id='upload-input' type="file"  onChange={handleSendImage} />
-                            </div>
-                        </Tooltip>
-                        <Tooltip title="视频通话">
-                            <VideoCameraOutlined style={{color: '#999', fontSize: 20, cursor: 'pointer'}} />
-                        </Tooltip>
-                    </Space>
-                </div>
-                <div>
-                    <Space size={14}>
-                        
-                        {
-                            // convStatus === 2 && 
-                            <>
-                                <Button size='small' color='primary' variant='filled' onClick={handleKaifang}>辨证开方</Button>
-                                <Button size='small' color='primary' variant='filled' onClick={handleAddConsult}>补填问诊单</Button>
-                                <Button size='small' color='danger' variant='filled' onClick={handleRefund}>退款</Button>
-                            </>
-                        }
-                    </Space>
-                </div>
-                </>
-                }
-            </div>
-            <div>
+            <div style={{background: '#f0f0f0', margin: '6px 6px 0', borderRadius: 4}}>
                 <Input.TextArea
-                    placeholder={conversationId ? "请输入消息，按回车键发送消息" : "请选择患者进行聊天"}
+                    placeholder={conversationData.conversationId ? "请输入消息，按回车键发送消息" : "请选择患者进行聊天"}
                     rows={8}
                     variant="borderless" 
                     value={inputValue}
                     disabled={!convStatus === 2}
                     onChange={(e) => {setInputValue(e.target.value)}}
                     onPressEnter={handleSendMsg}
+                    style={{padding: 12}}
                 />
-                <div className='flexbox' style={{justifyContent: 'flex-end', padding:10}}>
-                    <Button 
-                        type='primary' 
-                        onClick={handleSendMsg}
-                        disabled={!inputValue || !convStatus === 2}
-                    >发送</Button>
+                <div className='flexbox' style={{padding:10}}>
+                    <div className='flex1'>
+                    {
+                        conversationData.conversationId &&
+                        <Space size="small">
+                            <Tooltip title="发送图片">
+                                <div className='file-wrapper'>
+                                    <FileImageOutlined style={{color: '#333', fontSize: 20, cursor: 'pointer'}} />
+                                    <input id='upload-input' type="file"  onChange={handleSendImage} />
+                                </div>
+                            </Tooltip>
+                            <Tooltip title="视频通话">
+                                <div className='video-wrapper'>
+                                    <VideoCameraOutlined style={{color: '#333', fontSize: 20, cursor: 'pointer'}} />
+                                </div>
+                            </Tooltip>
+                        </Space>
+                    }
+                    </div>
+                    <div className='v-center'>
+                        <Button 
+                            type='primary' 
+                            onClick={handleSendMsg}
+                            disabled={!inputValue || !convStatus === 2}
+                        >发送</Button>
+                    </div>
                 </div>
+            </div>
+            <div style={{padding: 10}}>
+                <Space size="small">
+                    {
+                        convStatus === 1 && 
+                        <>
+                            <Button type='primary' onClick={() => setVisible(true)}>辨证开方</Button>
+                            <Button type='primary' onClick={() => setVisible(true)}>视频通话</Button>
+                            <Button type='primary' onClick={handleAddConsult}>补填问诊单</Button>
+                            {/* <Button onClick={handleRefund}>退款</Button> */}
+                        </>
+                    }
+                </Space>
             </div>
         </div>
         <div style={{height: '100%', width: 300, background: '#fff'}}>
@@ -356,30 +376,19 @@ export default function Dashboard(){
         <DrawerForm 
             layout='vertical'
             title="开具处方"
-            width={760}
+            width={1000}
             open={visible}
             formRef={formRef}
+            drawerProps={{
+                footer: null,
+                destroyOnClose: true,
+                onClose: () => setVisible(false)
+            }}
         >
             <ProFormGroup title="病情诊断">
                 <ProFormSelect
                     label="西医诊断"
                     name="xyzd"
-                    width="sm"
-                    options={zyOptions}
-                    placeholder="请输入西医诊断"
-                    showSearch
-                    allowClear
-                    notFoundContent={null}
-                    filterOption={false}
-                    fieldProps={{
-                        loading: loadingZy,
-                        onSearch: searchZy,
-                    }}
-                    rules={[{required: true, message: '请输入关键词搜索'}]} 
-                />
-                <ProFormSelect
-                    label="中医诊断"
-                    name="zyzd"
                     width="sm"
                     options={xyOptions}
                     placeholder="请输入西医诊断"
@@ -391,14 +400,28 @@ export default function Dashboard(){
                         loading: loadingXy,
                         onSearch: searchXy,
                     }}
-                    rules={[{required: true, message: '请输入关键词搜索'}]} 
+                />
+                <ProFormSelect
+                    label="中医诊断"
+                    name="zyzd"
+                    width="sm"
+                    options={zyOptions}
+                    placeholder="请输入中医诊断"
+                    showSearch
+                    allowClear
+                    notFoundContent={null}
+                    filterOption={false}
+                    fieldProps={{
+                        loading: loadingZy,
+                        onSearch: searchZy,
+                    }}
                 />
                 <ProFormSelect
                     label="中医证型"
                     name="zybz"
                     width="sm"
                     options={zxOptions}
-                    placeholder="请输入西医诊断"
+                    placeholder="请输入中医证型"
                     showSearch
                     allowClear
                     notFoundContent={null}
@@ -407,7 +430,6 @@ export default function Dashboard(){
                         loading: loadingZx,
                         onSearch: searchZx,
                     }}
-                    rules={[{required: true, message: '请输入关键词搜索'}]} 
                 />
             </ProFormGroup>
             <ProFormGroup title="开方">
@@ -419,6 +441,10 @@ export default function Dashboard(){
                     placeholder="请输入西医诊断"
                     showSearch
                     allowClear
+                    onChange={() => {
+                        formRef.current?.setFieldValue('cfType', null);
+                        formRef.current?.setFieldValue('rp', undefined);
+                    }}
                     notFoundContent={null}
                     rules={[{required: true, message: '请输入关键词搜索'}]} 
                 />
@@ -426,7 +452,6 @@ export default function Dashboard(){
                 {
                     ({dosageFormId}) => {
                         const opts = jxOptions.find(item => item.value === dosageFormId);
-                        formRef.current?.setFieldValue('cfType', null);
                         return (
                             <ProFormSelect
                                 label="选择药房"
@@ -436,6 +461,9 @@ export default function Dashboard(){
                                 placeholder="请选择药房"
                                 allowClear
                                 notFoundContent={null}
+                                onChange={() => {
+                                    formRef.current?.setFieldValue('rp', undefined);
+                                }}
                                 rules={[{required: true, message: '请选择药房'}]} 
                             />
                         )
@@ -468,21 +496,213 @@ export default function Dashboard(){
                         const opts = jxOptions.find(item => item.value === dosageFormId);
                         const isZy = opts && opts.sourceData.children.length > 0;
                         return (dosageFormId && cfType) ? isZy ? (
-                            <Form.Item name="rp" noStyle>
+                            <Form.Item name="rp" noStyle rules={[{required: true, message: '请选择药材'}]}>
                                 <ZyTable dosageFormId={dosageFormId} pharmacyNumber={cfType} />
                             </Form.Item>
                         ) : (
-                            <Form.Item name="rp" noStyle>
+                            <Form.Item name="rp" noStyle rules={[{required: true, message: '请选择药品'}]}>
                                 <XyTable dosageFormId={dosageFormId} pharmacyNumber={cfType}/>
                             </Form.Item>
                         ) : null;
                     }
                 }
             </ProFormDependency>
+            <ProFormDependency name={['dosageFormId', 'cfType']}>
+                {
+                    ({dosageFormId, cfType}) => {
+                        const opts = jxOptions.find(item => item.value === dosageFormId);
+                        const isZy = opts && opts.sourceData.children.length > 0;
+                        return (dosageFormId && cfType) ? isZy && (
+                            <Form.Item
+                                name="jiliang"
+                                noStyle
+                                required
+                                rules={[
+                                    {
+                                        validator: (_, value) => {
+                                            if (!value.jiliang || !value.jlPerDay || !value.times) {
+                                                return Promise.reject(new Error('请完善计量信息'));
+                                            }
+                                            return Promise.resolve();
+                                        },
+                                    }
+                                ]}
+                            >
+                                <JLInput />
+                            </Form.Item>
+                        ) : null;
+                    }
+                }
+            </ProFormDependency>
             <Divider />
-            <ProFormTextArea label="补充说明" name="remarks" />
+            <ProFormTextArea label="医嘱" name="yz" />
+            <Divider />
+            <div style={{textAlign: 'center'}}>
+                <Space size="middle">
+                    <Button 
+                        color='primary' 
+                        variant='filled' 
+                        style={{width: 200}}
+                        onClick={async () => {
+                            const values = await formRef.current?.validateFields();
+                            const jixing = jxOptions.find(item => item.value === values.dosageFormId);
+                            const cfTypeName = jixing.sourceData.pharmacy.find(item => item.pharmacyNumber === values.cfType)?.name;// 药房名称，
+                            const dosageFormSubName = jixing.sourceData.children.find(item => item.name === values.dosageFormSubId)?.name;
+                         
+                            setPreviewData({
+                                visible: true,
+                                data: {
+                                    ...values,
+                                    dosageFormName: jixing?.label,// 剂型，
+                                    dosageFormSubName,// 代煎设置，
+                                    cfTypeName,// 药房名称，
+                                    xyzdName: values.xyzd ? xyOptions.find(item => item.value === values.xyzd)?.label : '',// 西医诊断
+                                    zyzdName: values.zyzd ? zyOptions.find(item => item.value === values.zyzd)?.label : '',// 中医诊断
+                                    zybzName: values.zybz ? zxOptions.find(item => item.value === values.zybz)?.label : '',// 中医证型
+                                }
+                            }) 
+                        }}
+                    >预览处方</Button>
+                    <Button 
+                        type='primary' 
+                        style={{width: 200}}
+                        onClick={async () => {
+                            const values = await formRef.current?.validateFields();
+                            await addPrescription({
+                                ...values, 
+                                ...values?.jiliang,
+                                ...conversationData
+                            });
+                            setVisible(false);
+                            setPreviewData({visible: false});
+                            message.success('处方开具成功');
+                        }}
+                    >直接开方</Button>
+                </Space>
+            </div>
         </DrawerForm>
+        <Modal
+            title={<div>郑州市中医院互联网医院电子病历&nbsp;&nbsp;<Tag bordered={false} color="processing">普通药品处方</Tag></div>}
+            open={preview.visible}
+            centered
+            destroyOnClose
+            maskClosable={false}
+            onCancel={() => setPreviewData({visible: false})}
+            width={700}
+            okText="确定开方"
+            style={{height: 600}}
+            onOk={async () => {
+                await addPrescription({
+                    ...preview.data, 
+                    ...preview.data?.jiliang,
+                    ...conversationData
+                });
+                setVisible(false);
+                setPreviewData({visible: false});
+                message.success('处方开具成功');
+            }}
+        >
+            <MedicinePreviewer data={preview.data} patientData={conversationData}  />
+        </Modal>
     </div>
+}
+
+function MedicinePreviewer({data, patientData}) {
+    return (
+        <div>
+            <Descriptions 
+                title="患者信息"
+                column={4}
+                items={[
+                    {key: '1', span: 4, label: '日期', children: dayjs().format('YYYY-MM-DD')},
+                    {key: '2', label: '姓名', children: patientData?.patientName},
+                    {key: '3', label: '性别', children: patientData?.patientGender === 1 ? '男' : '女'},
+                    {key: '4', label: '年龄', children: patientData?.patientAge + '岁'},
+                ]}
+            />
+            <Divider />
+            <Descriptions 
+                title="病情诊断"
+                column={1}
+                items={[
+                    {key: '1', label: '西医诊断', children: data?.xyzdName || '无'},
+                    {key: '2', label: '中医诊断', children: data?.zyzdName || '无'},
+                    {key: '3', label: '中医证型', children: data?.zybzName || '无'},
+                ]}
+            />  
+            <Divider />
+            <Descriptions 
+                title="开方"
+                column={1}
+                items={[
+                    {key: '1', children: <span style={{fontWeight: 'bold', color: '#0C2556'}}>{data?.dosageFormName}<Divider type='vertical' />{data?.cfTypeName}</span>},
+                ]}
+            />
+            <div style={{marginTop: 10}}>RP</div>
+            <div className="rp-content">
+                { data?.dosageFormId <= 2 ? <ZyRp data={data?.rp} {...data?.jiliang} /> : <XyRp data={data?.rp} /> }
+            </div>
+            <Divider />
+            <Descriptions 
+                title="医嘱"
+                column={1}
+                items={[
+                    {key: '1', children: data?.yz || '无'},
+                ]}
+            />
+        </div>
+    )
+}
+
+function ZyRp({data, times, jiliang, jlPerDay}) {
+    return (
+        <div className='item-wrapper'>
+            <Space size={[40, 6]} wrap>
+            {data?.map(item => (
+                <div key={item.id}>
+                    {item.name} *{item.count}{item.unit}
+                    {item.jf ? <Tag color="processing" size='small'>{item.jf}</Tag> : null}
+                </div>
+            ))}
+            </Space>
+            <div style={{color: '#0147EB', marginTop: 12}}>共{jiliang}剂，每日{jlPerDay}剂，每剂分{times}次使用</div>
+        </div>
+    )
+}
+
+function XyRp({data}) {
+    return (
+        data?.map(item => (
+            <div className='item-wrapper'>
+                <Space size="small" direction='vertical'>
+                    <div style={{fontWeight: 'bold'}}>{item.name}</div>
+                    <Space size="large">
+                        <div>规格：{item.specification}</div>
+                        <div>价格：{item.price}元/{item.packUnitName}</div>
+                    </Space>
+                    <div>用法用量：一次{item.dcyl}{item.doseUnitName},{item.frenquencyName}，{item.usageName}，用药{item.days}天</div>
+                    <div>补充说明：{item.remark || '无'}</div>
+                    <div>数量：{item.count}{item.unitName}</div>
+                </Space>
+            </div>
+        ))
+    )
+}
+
+function JLInput({value = {}, onChange}) {
+    return (
+        <Space style={{marginTop: 24}}>
+            <div>
+                共&nbsp;<InputNumber value={value?.jiliang} onChange={val => onChange({...value, jiliang: val})} />&nbsp;剂，
+            </div>
+            <div>
+                每日&nbsp;<InputNumber value={value?.jlPerDay} onChange={val => onChange({...value, jlPerDay: val})} />&nbsp;剂，
+            </div>
+            <div>
+                1剂分&nbsp;<InputNumber value={value?.times} onChange={val => onChange({...value, times: val})} />&nbsp;次使用
+            </div>
+        </Space>
+    )
 }
 
 function formatLocalChatData(payload, MsgType) {
@@ -515,7 +735,7 @@ function formatOriginChatData(id, from, payload) {
 // 中药可编辑表格组件
 function ZyTable({ value = [], onChange, pharmacyNumber, dosageFormId }) {
 
-    const [editableKeys, setEditableRowKeys] = useState([]);
+    const editableKeys = value.map(item => item.id)
 
     const [ options, handleSearch, loading ] = useSelectSearch({
         service: getMedicineList,
@@ -533,35 +753,57 @@ function ZyTable({ value = [], onChange, pharmacyNumber, dosageFormId }) {
     const handleChange = (val) => {
         if (!val) return;
         const { sourceData } = options.find(item => item.value === val);
-        onChange(value.concat({...sourceData, count: 0}));
+        onChange(value.concat({...sourceData, count: '', jf: ''}));
     }
 
     const columns = [
         {
             title: '药材名称',
             dataIndex: 'name',
+            readonly: true,
+            ellipsis: true,
         },
         {
             title: '药材编码',
-            dataIndex: 'serialNumber',
+            dataIndex: 'drugCode',
+            readonly: true,
+            ellipsis: true,
         },
         {
             title: '单价',
             dataIndex: 'price',
+            readonly: true,
+            ellipsis: true,
+            valueType: 'digit',
+            width: 80
         },
         {
             title: '数量',
             valueType: 'digit',
             dataIndex: 'count',
-            editable: true
+            valueType: 'digit',
+            width: 50
         },
         {
             title: '单位',
             dataIndex: 'unit',
+            readonly: true,
+            width: 80
+        },
+        {
+            title: '煎法',
+            dataIndex: 'jf',
+            width: 200
+        },
+        {
+            title: '操作',
+            valueType: 'option',
+            width: 50,
+            render: () => {
+              return null;
+            },
         },
     ]
-
-    console.log('value:', value)
 
     return (
         <section style={{background: '#1da57a'}} >
@@ -578,6 +820,7 @@ function ZyTable({ value = [], onChange, pharmacyNumber, dosageFormId }) {
                 loading={loading}
             />
             <EditableProTable 
+                rowKey="id"
                 size='small'
                 bordered
                 value={value}
@@ -591,10 +834,8 @@ function ZyTable({ value = [], onChange, pharmacyNumber, dosageFormId }) {
                         return [defaultDoms.delete];
                     },
                     onValuesChange: (record, recordList) => {
-                        console.log('record:', recordList)
                         onChange(recordList);
                     },
-                    onChange: setEditableRowKeys,
                 }}
             />
         </section>
@@ -602,12 +843,19 @@ function ZyTable({ value = [], onChange, pharmacyNumber, dosageFormId }) {
 }
 
 // 西药可编辑表格组件
-function XyTable({ value, onChange, pharmacyNumber, dosageFormId }) {
+function XyTable({ value = [], onChange, pharmacyNumber, dosageFormId }) {
 
-    const [editableKeys, setEditableRowKeys] = useState([]);
+    const [ columns, setColumns ] = useState([])
+    const ref = useRef({
+        usage: [],
+        frequency: []
+    });
+
+    const editableKeys = value.map(item => item.id)
 
     const [ options, handleSearch, loading ] = useSelectSearch({
         service: getMedicineList,
+        labelKey: 'name',
         keywords: 'keywords',
         auto: false,
         params: {
@@ -617,41 +865,122 @@ function XyTable({ value, onChange, pharmacyNumber, dosageFormId }) {
         }
     })
 
-    const handleChange = (value) => {
+    useEffect(() => {
+        (async () => {
+            const res = await getMedicineDetails({id: 1});
+            const usage = res.data.usage.map(item => ({label: item.usageName, value: item.usageCode}));
+            const frequency = res.data.frequency.map(item => ({label: item.frenquencyName, value: item.frenquencyCode}));
+            setColumns(
+                [
+                    {
+                        title: '药品名称',
+                        dataIndex: 'name',
+                        readonly: true,
+                        ellipsis: true,
+                        width: 100
+                    },
+                    {
+                        title: '规格',
+                        dataIndex: 'specification',
+                        readonly: true,
+                        width: 80,
+                        ellipsis: true
+                    },
+                    {
+                        title: '单次药量',
+                        dataIndex: 'dcyl',
+                        width: 100,
+                        valueType: 'digit'
+                    },
+                    {
+                        title: '单位',
+                        dataIndex: 'doseUnitCode',
+                        readonly: true,
+                        width: 50,
+                    },
+                    {
+                        title: '给药频率',
+                        dataIndex: 'frenquencyCode',
+                        width: 120,
+                        valueType: 'select',
+                        fieldProps: {
+                            allowClear: true,
+                            showSearch: true,
+                            options: frequency
+                        }
+                    },
+                    {
+                        title: '给药途径',
+                        dataIndex: 'usageCode',
+                        valueType: 'select',
+                        width: 100,
+                        fieldProps: {
+                            allowClear: true,
+                            showSearch: true,
+                            options: usage
+                        }
+                    },
+                    {
+                        title: '用药天数',
+                        dataIndex: 'days',
+                        width: 80,
+                        valueType: 'digit'
+                    },
+                    {
+                        title: '开药量',
+                        dataIndex: 'count',
+                        valueType: 'digit',
+                        width: 80,
+                    },
+                    {
+                        title: '单位',
+                        dataIndex: 'packUnitName',
+                        readonly: true,
+                        width: 50,
+                    },
+                    {
+                        title: '补充说明',
+                        dataIndex: 'remark',
+                        width: 150,
+                    },
+                    {
+                        title: '操作',
+                        valueType: 'option',
+                        width: 50,
+                        fixed: 'right',
+                        render: () => {
+                          return null;
+                        },
+                    },
+                ]
+            )
+            ref.current = {
+                usage,
+                frequency
+            }
+        })();
+    }, []);
 
+    const handleChange = (val) => {
+        if (!val) return;
+        const { sourceData } = options.find(item => item.value === val);
+        onChange(value.concat({
+            ...sourceData, 
+            frenquencyName: '',
+            frenquencyCode: '',
+            usageName: '',
+            usageCode:'',
+            usageInput: '',
+            doseUnitCode: sourceData.unitCode,
+            doseUnitName: sourceData.unitName,
+            days: '', 
+            dcyl: '', 
+            remark: ''
+        }));
     }
 
-    const columns = [
-        {
-            title: '药材名称',
-            dataIndex: 'name',
-            readyOnly: true,
-        },
-        {
-            title: '药材编码',
-            dataIndex: 'serialNumber',
-            readyOnly: true,
-        },
-        {
-            title: '单价',
-            dataIndex: 'price',
-            readyOnly: true,
-        },
-        {
-            title: '数量',
-            dataIndex: 'count',
-        },
-        {
-            title: '单位',
-            dataIndex: 'unit',
-            readyOnly: true,
-        },
-    ]
-
     return (
-        <section 
-            style={{background: '#1da57a'}}
-        >
+        <section style={{background: '#1da57a'}}>
         <Select 
             style={{width: 300, margin: 10}}
             options={options}
@@ -666,8 +995,9 @@ function XyTable({ value, onChange, pharmacyNumber, dosageFormId }) {
         />
         <EditableProTable 
             size='small'
+            rowKey="id"
             bordered
-            dataSource={value || []}
+            value={value}
             columns={columns}
             onChange={(v) => onChange(v)}
             recordCreatorProps={false}
@@ -678,9 +1008,14 @@ function XyTable({ value, onChange, pharmacyNumber, dosageFormId }) {
                     return [defaultDoms.delete];
                 },
                 onValuesChange: (record, recordList) => {
-                    onChange(recordList);
+                    const newDataList = recordList.map(item => ({
+                        ...item,
+                        usageName: item.usageCode ? ref.current.usage.find(el => el.value === item.usageCode).label : '',
+                        frenquencyName: item.frenquencyCode ? ref.current.frequency.find(el => el.value === item.frenquencyCode).label : ''
+                    }))
+                    onChange(newDataList);
                 },
-                onChange: setEditableRowKeys,
+                // onChange: setEditableRowKeys,
             }}
         />
         </section>

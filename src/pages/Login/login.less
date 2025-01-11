@@ -11,15 +11,21 @@
 }
 
 .loginLayeroutContent{
-  margin-top: 150px;
+  display: flex;
 }
 
 .loginFormContainer{
-  width: 388px;
-  margin: 0 auto;
-  @media(min-width: 320px) and (max-width: 600px) {
-    width: 300px;
-  }
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.banner{
+  width: 45%;
+  background-size: cover;
+  background-position: center;
+  background-image: url(../../assets/banner.png);
 }
 
 .pageTitle{

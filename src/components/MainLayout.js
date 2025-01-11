@@ -11,32 +11,46 @@ function MainLayout() {
   const navigate = useNavigate();
   
   return (
+    <div className='flexbox'>
+      <div style={{position: 'relative', zIndex: 10000, backgroundColor: '#0C2556', width: 80}}>
+        <Logo navigate={navigate}/>
+      </div>
       <Layout style={{ 
         minHeight: '100vh', 
       }}>
         <Header style={{
           position: 'fixed', 
-          // background: '#fff', 
           padding: 0, 
           zIndex: 999, 
           width: '100%', 
           boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.13)', 
           left: 0, 
-          // paddingLeft: offsetLeft, 
           height: 54,
           linHeight: 54,
-          transition: 'padding-left 0.2s' 
+          backgroundColor: '#fff'
         }}  
         >
-          <section style={{position: 'relative', height: '100%', lineHeight: 1}}>
-            <Logo navigate={navigate}/>
+          <div className='flexbox' style={{position: 'relative', height: '100%', lineHeight: 1}}>
+            <div 
+              className='flex1'
+              style={{
+                paddingLeft: 100,
+                fontSize: 18,
+                fontWeight: 'bold',
+                color: '#333',
+                lineHeight: '54px',
+                fontStyle: 'italic',
+                letterSpacing: 1,
+              }}
+            >郑州市中医院医生工作台</div>
             <TopHeader />
-          </section>
+          </div>
         </Header>
         <Content style={{ minHeight: 'auto', paddingTop: 54}} id="mainContainer">
           <Outlet />
         </Content>
       </Layout>
+    </div>
   );
 }
 

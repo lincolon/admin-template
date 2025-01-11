@@ -38,55 +38,54 @@ function LoginPage(props) {
   return (
     <Layout className="loginLayeroutContainer">
       <Content className="loginLayeroutContent">
-        <section>
-          <div className="pageTitle">
-            <span className="logo img-cover no-bg"></span>
-            <h1 className="pageTitleH1">河南中医院</h1>
-          </div>
-          <summary></summary>
-        </section>
+        <div className='banner'></div>
         <section className="loginFormContainer">
-          <Form 
-            form={form}
-            onFinish={handleSubmit} 
-            className="login-form"
-            initialValues={{userName: '13586578127', code: '1234'}}
-          >
-            <Form.Item
-              name="userName"
-              rules={[
-                { required: true, message: '请输入登录账号' },
-              ]}
+          <div style={{
+            width: 400
+          }}>
+            <h2 style={{textAlign: 'center', color: '#3A3F63'}}>郑州市中医院互联网医院医生工作站</h2>
+            <div style={{textAlign: 'center', color: '#6A74A5', marginBottom: 20}}>欢迎使用</div>
+            <Form 
+              form={form}
+              onFinish={handleSubmit} 
+              className="login-form"
+              initialValues={{userName: '13586578127', code: '1234'}}
             >
-              <Input 
-                size="large" 
-                prefix={<PhoneOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} 
-                placeholder="登录手机" 
-              />
-            </Form.Item>
-            <ProFormDependency name={['userName']}>
-              {
-                ({userName}) => {
-                  return <Form.Item
-                    name="code"
-                    rules={[
-                      { required: true, message: '请输入验证码' },
-                    ]}
-                  >
-                  <CodeSender phone={userName} />
-                </Form.Item>
+              <Form.Item
+                name="userName"
+                rules={[
+                  { required: true, message: '请输入登录账号' },
+                ]}
+              >
+                <Input 
+                  size="large" 
+                  prefix={<PhoneOutlined style={{ color: 'rgba(0,0,0,.25)' }} />} 
+                  placeholder="登录手机" 
+                />
+              </Form.Item>
+              <ProFormDependency name={['userName']}>
+                {
+                  ({userName}) => {
+                    return <Form.Item
+                      name="code"
+                      rules={[
+                        { required: true, message: '请输入验证码' },
+                      ]}
+                    >
+                    <CodeSender phone={userName} />
+                  </Form.Item>
+                  }
                 }
-              }
-            </ProFormDependency>
-            <Form.Item>
-              <Button size="large" type="primary" htmlType="submit" className="loginFormButton">
-                登&nbsp;&nbsp;录
-              </Button>
-            </Form.Item>
-          </Form>
+              </ProFormDependency>
+              <Form.Item>
+                <Button size="large" type="primary" shape="round" htmlType="submit" className="loginFormButton">
+                  登&nbsp;&nbsp;录
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
         </section>
       </Content>
-      <CFooter />
     </Layout>
   )
 }

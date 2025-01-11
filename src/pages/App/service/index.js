@@ -134,3 +134,8 @@ export function getPreConsultation(params) {
 export function acceptOrRefusePaint(data) {
     return axios.post('/v1/orders/consultation/opt', data);
 }
+
+// 获取药品详情
+export function getMedicineDetails(params) {
+    return axios.get('/v1/orders/medicine/detail', {params});
+}

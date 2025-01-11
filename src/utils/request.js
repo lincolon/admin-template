@@ -93,7 +93,7 @@ export default function initRequest(){
         data: response.data.data,
       };
     }else if(+code === 8000){
-      location.replace('/login');
+      // location.replace('/login');
     } else if(+code === 1003) {
       console.log(config)
       const access_token =  await refreshToken();
