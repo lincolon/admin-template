@@ -10,7 +10,7 @@ const types =  {
     '3': {text: '视频问诊', color: '#00c6a2'}
 };
 
-export default function ConsultItem({ type, onClick, onUpdateCount }) {
+export default function ConsultItem({ type, updateTimeStamp, onClick, onUpdateCount }) {
 
     const timerRef = useRef();
 
@@ -18,6 +18,17 @@ export default function ConsultItem({ type, onClick, onUpdateCount }) {
         list: [],
         pageInfo: {}
     })
+
+    useEffect(() => {
+        if(updateTimeStamp > 0) {
+            getConsultationList({ status: type }).then(res => {
+                setState({
+                    list: res.data.items,
+                    pageInfo: res.data.pageInfo,
+                })
+            })
+        }
+    }, [updateTimeStamp])
 
     useEffect(() => {
         getConsultationList({ status: type }).then(res => {
@@ -31,7 +42,6 @@ export default function ConsultItem({ type, onClick, onUpdateCount }) {
         }
         timerRef.current = setInterval(() => {
             getConsultationList({ status: 6 }).then(res => {
-                console.log('_type', type);
                 if(type === 6){
                     setState({
                         list: res.data.items,

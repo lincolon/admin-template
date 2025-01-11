@@ -2,7 +2,7 @@ import { Button, Checkbox, Descriptions, Divider, Drawer, Form, Image, Input, Mo
 import React, { useState } from "react";
 import { getPreConsultation, acceptOrRefusePaint } from '../service'
 
-export default function ConsultDetails({ data }) {
+export default function ConsultDetails({ data, onAccept }) {
 
     const [form] = Form.useForm();
 
@@ -12,7 +12,8 @@ export default function ConsultDetails({ data }) {
     })
 
     const handleAccept = async () => {
-        await acceptOrRefusePaint({consultationId: data.id, status: 2})
+        await acceptOrRefusePaint({consultationId: data.id, status: 2});
+        onAccept(2, data);
     }
 
     const handleRefuse = () => {
@@ -22,7 +23,8 @@ export default function ConsultDetails({ data }) {
             centered: true,
             content: <Input.TextArea onChange={e => reason = e.target.value} />,
             onOk: async () => {
-                await await acceptOrRefusePaint({consultationId: data.id, status: 7, reason})
+                await acceptOrRefusePaint({consultationId: data.id, status: 7, reason});
+                onAccept(7);
             }
         })
     }

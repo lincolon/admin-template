@@ -14,7 +14,7 @@ import localforage from 'localforage';
 import {
     getConversationStatus,
     getChatHistory,
-    acceptOrRefusePaint,
+    getPrescriptionDetails,
     uploadImage,
     getConsultationDetails,
     getDiagnosisList1,
@@ -50,6 +50,7 @@ export default function Dashboard(){
     const formRef = useRef();
     const [ visible, setVisible ] = useState(false);
     const [ tabvalue, setTabvalue ] = useState(6);
+    const [ updateTimeStamp, setUpdateTimeStamp ] = useState(0);
     const [ inputValue, setInputValue ] = useState('');
     const [ convStatus, setConvStatus ] = useState(0);
     const [ standbyCount, updateStandbyCount ] = useState(0);
@@ -58,7 +59,7 @@ export default function Dashboard(){
         patientId: '',
         conversationId: '',
     });
-    const [ preview, setPreviewData ] = useState({visible: false, data: null });
+    const [ preview, setPreviewData ] = useState({visible: false, data: null, type: 'preview' });
     const [ consultData, updateConsultData ] = useState({visible: false, data: null });
     const [ chatData, setChatData ] = useState({
         lastChatId: '',
@@ -116,6 +117,7 @@ export default function Dashboard(){
         }).catch(() => {})
     }, [])
 
+    // 消息接收事件处理函数
     const onMessageReceived = function(event) {
         // event.data - 存储 Message 对象的数组 - [Message]
         const messageList = event.data;
@@ -144,6 +146,7 @@ export default function Dashboard(){
         });
     };
 
+    // 选择就诊人
     const handleChoosePainter = async ({
         id,
         status,
@@ -190,6 +193,7 @@ export default function Dashboard(){
         }
     }
 
+    // 问诊单详情查看
     const handleConsultClick = async (consultationId) => {
         const res = await getConsultationDetails({consultationId})
         updateConsultData({
@@ -202,6 +206,17 @@ export default function Dashboard(){
         });
     }
 
+    // 处方单详情查看
+    const handlePrescriptionClick = async (prescriptionId) => {
+        const res = await getPrescriptionDetails({prescriptionId})
+        setPreviewData({
+            visible: true,
+            data: res.data,
+            type: 'prescription'
+        })
+    }
+
+    // 发送文本消息
     const handleSendMsg = async () => {
         if(!inputValue || !conversationData.conversationId) return;
         const payload = formatLocalChatData({
@@ -215,6 +230,7 @@ export default function Dashboard(){
         })
     }
 
+    // 发送图片消息
     const handleSendImage = async () => {
         const file = document.getElementById('upload-input').files[0];
         if(!file || !conversationData.conversationId) return;
@@ -227,29 +243,6 @@ export default function Dashboard(){
           data: chatData.data.concat({...payload, conversationId: conversationData.conversationId}),
           lastChatId: `item_${payload.id}`,
         })
-    }
-
-    const handleAccept = async (type) => {
-        if(type === 'accept'){
-            const { data } = await acceptOrRefusePaint({conversationId: conversationData.conversationId, type: 2});
-        } else {
-            // 拒绝请弹窗输入原因
-            let reason;
-            Modal.confirm({
-                title: '拒绝原因',
-                centered: true,
-                maskClosable: false,
-                content: <Input.TextArea onChange={e => reason = e.target.value} placeholder="请输入拒绝原因"  />,
-                onOk: async () => {
-                    if(!reason){
-                        message.warning('请输入拒绝原因');
-                        return;
-                    }
-                    await acceptOrRefusePaint({conversationId: conversationData.conversationId, type: 7, reason});
-                },
-            });
-            
-        }
     }
 
     // 补填问诊单
@@ -268,12 +261,15 @@ export default function Dashboard(){
         }
     }, [chatData.data]);
 
+    const previewFooter = preview.type === 'preview' ? {} : {footer: null};
+
     return <div className="flexbox" style={{height: 'calc(100vh - 54px)'}}>
         <div style={{height: '100%', width: 300, background: '#fff'}}>
             <div style={{padding: 10}}>
                 <Segmented
                     block
                     onChange={(value) => setTabvalue(value)}
+                    value={tabvalue}
                     options={[
                         {value: 6, label: <Badge count={standbyCount} overflowCount={10}>待接诊</Badge>},
                         {value: 2, label: '问诊中'},
@@ -283,6 +279,7 @@ export default function Dashboard(){
             </div>
             <div className="consult-list" style={{overflowY: 'auto'}}>
                 <ConsultItem 
+                    updateTimeStamp={setUpdateTimeStamp}
                     type={tabvalue} 
                     onClick={(data) => handleChoosePainter(data)}
                     onUpdateCount={(count) => setStandbyCount(count)}
@@ -301,7 +298,7 @@ export default function Dashboard(){
                         MsgContent={item.MsgContent}
                         lastChatId={chatData.lastChatId}
                         onConsultCardClick={handleConsultClick}
-                        onPrescriptionCardClick={handleConsultClick}
+                        onPrescriptionCardClick={handlePrescriptionClick}
                         onQuestionnaireCardClick={handleConsultClick}
                     />
                 ))
@@ -371,7 +368,21 @@ export default function Dashboard(){
             open={consultData.visible}
             onCancel={() => updateConsultData({...consultData, visible: false})}
         >
-            <ConsultDetails data={consultData.data} />
+            <ConsultDetails 
+                data={consultData.data} 
+                onAccept={(acceptStatus, painterData) => {
+                    updateConsultData({...consultData, visible: false});
+                    if(acceptStatus === 2){
+                        // 接诊
+                        setTabvalue(2);
+                        handleChoosePainter(painterData);
+                    }else {
+                        // 拒诊
+                        setUpdateTimeStamp(new Date().getTime());
+                    }
+                    
+                }}
+            />
         </Modal>
         <DrawerForm 
             layout='vertical'
@@ -551,6 +562,7 @@ export default function Dashboard(){
                          
                             setPreviewData({
                                 visible: true,
+                                type: 'preview',
                                 data: {
                                     ...values,
                                     dosageFormName: jixing?.label,// 剂型，
@@ -589,6 +601,7 @@ export default function Dashboard(){
             maskClosable={false}
             onCancel={() => setPreviewData({visible: false})}
             width={700}
+            {...previewFooter}
             okText="确定开方"
             style={{height: 600}}
             onOk={async () => {
