@@ -390,6 +390,7 @@ export default function Dashboard(){
             width={1000}
             open={visible}
             formRef={formRef}
+            footer={null}
             drawerProps={{
                 footer: null,
                 destroyOnClose: true,
