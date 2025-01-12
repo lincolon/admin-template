@@ -27,12 +27,14 @@ function LoginPage(props) {
 
   const handleSubmit = async (values) => {
     const { data: { token, user } } = await loginByCode({mobilePhone: values.userName, code: values.code})
-    await storage.setItem(process.env.TOKEN_NAME, token.accessToken);
-    const imSign = await getIMSign();
-    storage.setItem('refreshToken', token.refreshToken);
-    storage.setItem('imSign', imSign.data);
-    await storage.setItem('userInfo', user);
-    navgiate('/app');
+    storage.setItem('accessToken', token.accessToken).then(async () => {
+      storage.setItem('refreshToken', token.refreshToken);
+      const imSign = await getIMSign();
+      storage.setItem('imSign', imSign.data);
+      await storage.setItem('userInfo', user);
+      navgiate('/app');
+    });
+    
   }
 
   return (

@@ -24,9 +24,12 @@ import {
     getMedicineList,
     getMedicineDetails,
     addPrescription,
-    sendMessageToPatient
+    sendMessageToPatient,
+    getOverReasons,
+    isCanOverSession,
+    endConsultation
 } from './service';
-import { DrawerForm, ProFormSelect, ProFormText, ProFormGroup, ProFormTextArea, ProFormDependency } from '@ant-design/pro-form';
+import { DrawerForm, ProFormSelect, ProFormText, ProFormGroup, ProFormTextArea, ProFormDependency, ProFormRadio } from '@ant-design/pro-form';
 import { EditableProTable } from '@ant-design/pro-table';
 import dayjs from 'dayjs';
 
@@ -266,14 +269,36 @@ export default function Dashboard(){
         })
     }
 
-    // 补填问诊单
-    const handleAddConsult = async () => {
-        
-    }
+    // 结束问诊
+    const handleOverWenzhen = async () => {
+        let form
 
-    // 退款
-    const handleRefund = async () => {
-        
+        function Content() {
+            [ form ] = Form.useForm();
+            return <Form form={form} layout='vertical' style={{marginTop: 10}}>
+                <ProFormRadio.Group required label='关闭类型' name="closeType" options={[{label: '正常结束', value: 0}, {label: '不对症或无法开具指定药品', value: 2}]} />
+                <ProFormSelect required label='关闭原因' name="reason" options={[{label: '不对症或无法开具指定药品', value: 2}]} />
+            </Form>
+        }
+
+        Modal.confirm({
+            title: '结束问诊',
+            centered: true,
+            content: <Content />,
+            onOk: async () => {
+                const { data: { closeAble, message } } = await isCanOverSession({conversationId: conversationData.conversationId})
+                if(!closeAble){
+                    message.error(message);
+                    return;
+                }
+                const values = await form.validateFields();
+                await endConsultation({
+                    conversationId: conversationData.conversationId,
+                    ...values,
+                });
+                setConvStatus({...convStatus, status: 0});
+            }
+        })
     }
 
     useEffect(() => {
@@ -396,6 +421,7 @@ export default function Dashboard(){
                     <Space size="small">
                         <Button type='primary' onClick={() => setVisible(true)}>辨证开方</Button>
                         <Button type='primary' onClick={() => setVisible(true)}>视频通话</Button>
+                        <Button type='primary' onClick={handleOverWenzhen}>结束问诊</Button>
                         {/* <Button type='primary' onClick={handleAddConsult}>补填问诊单</Button> */}
                         {/* <Button onClick={handleRefund}>退款</Button> */}
                     </Space>

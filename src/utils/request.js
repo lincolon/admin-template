@@ -47,14 +47,14 @@ export default function initRequest(){
   axios.defaults.baseURL = hostApi;
   axios.defaults.timeout = 60000;
 
-  axios.interceptors.request.use(function (config) {
+  axios.interceptors.request.use(async function (config) {
     // 在发送请求之前做些什么
     const authorization = {
       authorization: config.headers?.authorization
     };
-
+    const accessToken = await localforage.getItem('accessToken')
     if(config.url.indexOf('/login') === -1){
-      authorization["authorization"] = `Bearer ${Cookie.get(token_name)}`;
+      authorization["authorization"] = `Bearer ${accessToken}`;
     }
 
     if(requestQueen.isLoading(config.url))return;
@@ -98,7 +98,7 @@ export default function initRequest(){
         data: response.data.data,
       };
     }else if(+code === 8000){
-      // location.replace('/login');
+      location.replace('/login');
     } else if(+code === 1003) {
       const access_token =  await refreshToken();
       Cookie.set(token_name, access_token);
@@ -148,6 +148,6 @@ async function refreshToken() {
       localforage.setItem('refreshToken', res.data.refreshToken);
       return res.data.accessToken;
   }else{
-    // location.replace('/login');
+    location.replace('/login');
   }
 }

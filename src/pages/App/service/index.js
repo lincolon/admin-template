@@ -56,6 +56,22 @@ export function getMedicineList(params) {
 export function getConsultationList(params) {
     return axios.get('/v1/doctors/consultation/list', { params, hideLoading: true });
 }
+
+// 结束问诊单
+export function endConsultation(data) {
+    return axios.post('/v1/im/close-session', data);
+}
+
+// 结束问诊单
+export function isCanOverSession(params) {
+    return axios.get('/v1/im/ifclose', {params});
+}
+
+// 结束问诊单
+export function getOverReasons(params) {
+    return axios.get('/v1/doctors/consultation-close-reason', {params});
+}
+
 // 获取问诊列表
 export function dataAnalyses(data) {
     return axios.post('/data/analyses', data);
