@@ -13,7 +13,7 @@ export default function ConsultDetails({ data, onAccept }) {
 
     const handleAccept = async () => {
         await acceptOrRefusePaint({consultationId: data.id, status: 2});
-        onAccept(2, data);
+        onAccept(2);
     }
 
     const handleRefuse = () => {

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { Avatar, Divider, Image } from 'antd';
-import { RightOutlined, LoadingOutlined, VideoCameraOutlined, AudioOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { sendMessageToPatient } from "../service";
+import { RightOutlined, VideoCameraOutlined, AudioOutlined } from '@ant-design/icons';
+// import { sendMessageToPatient } from "../service";
 
 // import { renderChatContent } from '../../../utils/helper'
 
@@ -131,40 +131,40 @@ function ConversationItem({
 }) {
     const isDoctor = !from.includes('PATIENT');
     const avatar = isDoctor ? avatars.doctor : avatars.patient;
-    const [ state, setState ] = useState({
-        isLoading: false,
-        isError: false
-    });
+    // const [ state, setState ] = useState({
+    //     isLoading: false,
+    //     isError: false
+    // });
 
-    useEffect(() => {
-        console.log('useEffect conversationId: ', conversationId)
-        if (lastChatId === id && isDoctor) {
-            let hasSend = false;
-            sendMessageToPatient({
-                conversationId,
-                body: MsgContent
-            }).then(res => {
-                hasSend = res.success && res.data.ActionStatus !== 'FAIL';;
-                // 3秒消息还没发出去就显示loading
-                let timer = setTimeout(() => {
-                    if (hasSend) {
-                        clearTimeout(timer);
-                    }else{
-                        setState({  ...state, isLoading: true });
-                        // 10秒消息还没发出去就显示错误
-                        timer = setTimeout(() => {
-                            if (hasSend) {
-                                setState({ ...state, isLoading: false });
-                            }else{
-                                setState({ ...state, isError: true, isLoading: false });
-                            }
-                            clearTimeout(timer);
-                        }, 10000);
-                    }
-                }, 3000);
-            })
-        }
-    }, [id]);
+    // useEffect(() => {
+    //     console.log('useEffect conversationId: ', conversationId)
+    //     if (lastChatId === id && isDoctor) {
+    //         let hasSend = false;
+    //         sendMessageToPatient({
+    //             conversationId,
+    //             body: MsgContent
+    //         }).then(res => {
+    //             hasSend = res.success && res.data.ActionStatus !== 'FAIL';;
+    //             // 3秒消息还没发出去就显示loading
+    //             let timer = setTimeout(() => {
+    //                 if (hasSend) {
+    //                     clearTimeout(timer);
+    //                 }else{
+    //                     setState({  ...state, isLoading: true });
+    //                     // 10秒消息还没发出去就显示错误
+    //                     timer = setTimeout(() => {
+    //                         if (hasSend) {
+    //                             setState({ ...state, isLoading: false });
+    //                         }else{
+    //                             setState({ ...state, isError: true, isLoading: false });
+    //                         }
+    //                         clearTimeout(timer);
+    //                     }, 10000);
+    //                 }
+    //             }, 3000);
+    //         })
+    //     }
+    // }, [id]);
 
     return (
         <div 
@@ -173,7 +173,7 @@ function ConversationItem({
         >
             <Avatar size={40} className="conv-avatar" src={avatar} />
             <div className="conv-content">{renderChatContent(MsgContent, onConsultCardClick, onPrescriptionCardClick, onQuestionnaireCardClick)}</div>
-            {
+            {/* {
                 isDoctor && <>
                 {
                     state.isLoading && <div className='status-box h-center'>
@@ -186,7 +186,7 @@ function ConversationItem({
                     </div>
                 }
                 </>
-            }
+            } */}
         </div>
     )
 }

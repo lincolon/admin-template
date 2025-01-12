@@ -27,6 +27,9 @@ export default function ConsultItem({ type, updateTimeStamp, onClick, onUpdateCo
                     pageInfo: res.data.pageInfo,
                 })
             })
+            if(res.data?.items?.length){
+                onUpdateCount(res.data.items.length);
+            }
         }
     }, [updateTimeStamp])
 
@@ -36,6 +39,9 @@ export default function ConsultItem({ type, updateTimeStamp, onClick, onUpdateCo
                 list: res.data.items,
                 pageInfo: res.data.pageInfo,
             })
+            if(res.data?.items?.length){
+                onUpdateCount(res.data.items.length);
+            }
         })
         if(timerRef.current) {
             clearInterval(timerRef.current);
@@ -51,6 +57,8 @@ export default function ConsultItem({ type, updateTimeStamp, onClick, onUpdateCo
                 if(res.data?.items?.length){
                     onUpdateCount(res.data.items.length);
                 }
+            }).catch(() => {
+                clearInterval(timerRef.current);
             })
         }, 1000 * 5);
 

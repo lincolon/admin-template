@@ -58,6 +58,11 @@ export default function Main(){
                 token: {
                     colorPrimary: '#165DFF',
                 },
+                components: {
+                    Statistic: {
+                        contentFontSize: 14
+                    },
+                }
             }}
         >
             <BrowserRouter>

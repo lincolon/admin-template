@@ -61,8 +61,6 @@ export default function initRequest(){
 
     requestQueen.push(config.url);
 
-    console.log('config.hideLoading:', config.hideLoading);
-
     if(!config.hideLoading){
       NProgress.start();
     }
@@ -100,7 +98,7 @@ export default function initRequest(){
         data: response.data.data,
       };
     }else if(+code === 8000){
-      location.replace('/login');
+      // location.replace('/login');
     } else if(+code === 1003) {
       const access_token =  await refreshToken();
       Cookie.set(token_name, access_token);
@@ -150,6 +148,6 @@ async function refreshToken() {
       localforage.setItem('refreshToken', res.data.refreshToken);
       return res.data.accessToken;
   }else{
-    location.replace('/login');
+    // location.replace('/login');
   }
 }

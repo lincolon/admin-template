@@ -1,5 +1,5 @@
 import {FileImageOutlined, VideoCameraOutlined } from '@ant-design/icons';
-import { Segmented, Input, Space, Tooltip, Button, Modal, message, Form, Select, Divider, InputNumber, Descriptions, Tag, Badge } from 'antd';
+import { Segmented, Input, Space, Tooltip, Button, Modal, message, Form, Select, Divider, InputNumber, Descriptions, Tag, Badge, Statistic, Flex } from 'antd';
 import React, { useEffect, useState, useRef } from 'react';
 import TencentCloudChat from '@tencentcloud/chat';
 import ConsultItem from './components/ConsultItem';
@@ -23,7 +23,8 @@ import {
     getJixingList,
     getMedicineList,
     getMedicineDetails,
-    addPrescription
+    addPrescription,
+    sendMessageToPatient
 } from './service';
 import { DrawerForm, ProFormSelect, ProFormText, ProFormGroup, ProFormTextArea, ProFormDependency } from '@ant-design/pro-form';
 import { EditableProTable } from '@ant-design/pro-table';
@@ -46,14 +47,14 @@ export default function Dashboard(){
 
     const chatRef = useRef();
     const convListRef = useRef();
-    const convRef = useRef();
+    const chatDataRef = useRef([]);
     const formRef = useRef();
     const [ visible, setVisible ] = useState(false);
     const [ tabvalue, setTabvalue ] = useState(6);
     const [ updateTimeStamp, setUpdateTimeStamp ] = useState(0);
     const [ inputValue, setInputValue ] = useState('');
     const [ convStatus, setConvStatus ] = useState(0);
-    const [ standbyCount, updateStandbyCount ] = useState(0);
+    const [ standbyCount, setStandbyCount ] = useState(0);
     const [ conversationData, setConversationData ] = useState({
         doctorId: '',
         patientId: '',
@@ -121,28 +122,24 @@ export default function Dashboard(){
     const onMessageReceived = function(event) {
         // event.data - 存储 Message 对象的数组 - [Message]
         const messageList = event.data;
-        console.log('onMessageReceived', messageList)
         messageList.forEach((message) => {
-          const isDoctor = !message.from.includes('PATIENT');
-          console.log('isDoctor', isDoctor)
-          const payloadData = JSON.parse(message.payload.data);
-          if(!isDoctor){
+            const payloadData = JSON.parse(message.payload.data);
             switch(payloadData.MsgType){
-              case TencentCloudChat.TYPES.MSG_TEXT:  // 文本消息
-              case TencentCloudChat.TYPES.MSG_IMAGE:  // 图片消息
-              case TencentCloudChat.TYPES.MSG_SOUND:  // 音频消息
-              case TencentCloudChat.TYPES.MSG_VIDEO:  // 视频消息
-              case TencentCloudChat.TYPES.MSG_CUSTOM: // 自定义消息
-                const payload = formatOriginChatData(message.ID, message.from, payloadData);
-                setChatData({
-                  ...chatData,
-                  data: chatData.data.concat(payload),
-                  lastChatId: `item_${message.ID}`,
-                })
-              default: // 其他消息
+                case TencentCloudChat.TYPES.MSG_TEXT:  // 文本消息
+                case TencentCloudChat.TYPES.MSG_IMAGE:  // 图片消息
+                case TencentCloudChat.TYPES.MSG_SOUND:  // 音频消息
+                case TencentCloudChat.TYPES.MSG_VIDEO:  // 视频消息
+                case TencentCloudChat.TYPES.MSG_CUSTOM: // 自定义消息
+                    const payload = formatOriginChatData(message.ID, message.from, payloadData);
+                    chatDataRef.current = chatDataRef.current.concat(payload);
+                    setChatData({
+                        ...chatData,
+                        data: chatDataRef.current,
+                        lastChatId: `item_${message.ID}`,
+                    })
+                default: // 其他消息
                 break;
             }
-          }
         });
     };
 
@@ -157,7 +154,6 @@ export default function Dashboard(){
         patientGender,
         patientAge,
     }) => {
-        setConvStatus(status)
         if(status === 6){
             const res = await getConsultationDetails({consultationId: id})
             updateConsultData({
@@ -173,9 +169,10 @@ export default function Dashboard(){
                 message.error('暂无会话信息');
                 return;
             }
-            const convStatus = await getConversationStatus({conversationId});
+            const convStatusRes = await getConversationStatus({conversationId});
             const { data } = await getChatHistory({conversationId, page: 1, pageSize: 30});
             const historyMsg = data.items.reverse();
+            setConvStatus(convStatusRes.data)
             setConversationData({
                 doctorId,
                 patientId,
@@ -183,8 +180,9 @@ export default function Dashboard(){
                 patientName,
                 patientGender,
                 patientAge,
-                visitNo: convStatus.data.visitNo
+                visitNo: convStatusRes.data.visitNo
             });
+            chatDataRef.current = historyMsg;
             setChatData({ 
                 lastChatId: 'bottom',
                 data: historyMsg, 
@@ -223,11 +221,10 @@ export default function Dashboard(){
             Text: inputValue,
           }, 'TIMTextElem');
         setInputValue('');
-        setChatData({
-          ...chatData,
-          data: chatData.data.concat({...payload, conversationId: conversationData.conversationId}),
-          lastChatId: `item_${payload.id}`,
-        })
+        sendMessageToPatient({
+            conversationId: conversationData.conversationId,
+            body: payload
+        });
     }
 
     // 发送图片消息
@@ -237,11 +234,33 @@ export default function Dashboard(){
         const { data } = await uploadImage(file);
         const payload = formatLocalChatData({
             Url: data.url,
-          }, 'TIMImageElem');
-        setChatData({
-          ...chatData,
-          data: chatData.data.concat({...payload, conversationId: conversationData.conversationId}),
-          lastChatId: `item_${payload.id}`,
+        }, 'TIMImageElem');
+        sendMessageToPatient({
+            conversationId: conversationData.conversationId,
+            body: payload
+        })
+    }
+
+    // 开具处方
+    const handleAddPrescription = async (values) => {
+        const { data } = await addPrescription({
+            ...values, 
+            ...values?.jiliang,
+            ...conversationData
+        });
+        const xyzdName = values.xyzd ? xyOptions.find(item => item.value === values.xyzd)?.label : '';// 西医诊断
+        const zyzdName = values.zyzd ? zyOptions.find(item => item.value === values.zyzd)?.label : '';// 中医诊断
+        const payload = formatLocalChatData({
+            type: 'Prescription',
+            data: {
+                status: 1,
+                title: xyzdName || zyzdName,
+                prescriptionId: data.prescriptionId
+            },
+        }, 'TIMCustomElem');
+        sendMessageToPatient({
+            conversationId: conversationData.conversationId,
+            body: payload
         })
     }
 
@@ -263,6 +282,8 @@ export default function Dashboard(){
 
     const previewFooter = preview.type === 'preview' ? {} : {footer: null};
 
+    const isCanChat = convStatus.status === 1;
+
     return <div className="flexbox" style={{height: 'calc(100vh - 54px)'}}>
         <div style={{height: '100%', width: 300, background: '#fff'}}>
             <div style={{padding: 10}}>
@@ -271,7 +292,7 @@ export default function Dashboard(){
                     onChange={(value) => setTabvalue(value)}
                     value={tabvalue}
                     options={[
-                        {value: 6, label: <Badge count={standbyCount} overflowCount={10}>待接诊</Badge>},
+                        {value: 6, label: <Badge size='small' count={standbyCount} overflowCount={10}>待接诊</Badge>},
                         {value: 2, label: '问诊中'},
                         {value: 3, label: '已结束'},
                     ]}
@@ -279,7 +300,7 @@ export default function Dashboard(){
             </div>
             <div className="consult-list" style={{overflowY: 'auto'}}>
                 <ConsultItem 
-                    updateTimeStamp={setUpdateTimeStamp}
+                    updateTimeStamp={updateTimeStamp}
                     type={tabvalue} 
                     onClick={(data) => handleChoosePainter(data)}
                     onUpdateCount={(count) => setStandbyCount(count)}
@@ -287,6 +308,30 @@ export default function Dashboard(){
             </div>
         </div>
         <div className="flex1 chat-wrapper flexbox" style={{flexDirection: 'column'}}>
+            {
+                conversationData?.conversationId &&
+                <div className='status-bar'>
+                    <Space size="small">
+                    <Badge status={isCanChat ? 'processing' : 'default'} text={!isCanChat ? '已结束问诊' : '问诊中'} />
+                    {
+                        isCanChat ? (
+                        convStatus?.type === 12 ?
+                        <span className="inline fz-gray fz-12">第{convStatus?.rounds}/{convStatus?.totalRounds}次</span> :
+                        <Space size="small">
+                            <Statistic.Countdown 
+                                value={new Date(convStatus?.deadline)} 
+                                format="H 时 m 分 s 秒" 
+                                onFinish={() => {
+                                    setConvStatus({...convStatus, status: 0});
+                                }}
+                            /> 
+                            <span className="inline" style={{paddingLeft: 4, lineHeight: 1.7}}>自动后结束问诊</span>
+                        </Space>
+                        ) : null
+                    }
+                    </Space>
+                </div>
+            }
             <div className='conv-list flex1' ref={convListRef}>
             {
                 chatData.data.map(item => (
@@ -310,7 +355,7 @@ export default function Dashboard(){
                     rows={8}
                     variant="borderless" 
                     value={inputValue}
-                    disabled={!convStatus === 2}
+                    disabled={!isCanChat}
                     onChange={(e) => {setInputValue(e.target.value)}}
                     onPressEnter={handleSendMsg}
                     style={{padding: 12}}
@@ -338,13 +383,13 @@ export default function Dashboard(){
                         <Button 
                             type='primary' 
                             onClick={handleSendMsg}
-                            disabled={!inputValue || !convStatus === 2}
+                            disabled={!inputValue || !isCanChat}
                         >发送</Button>
                     </div>
                 </div>
             </div>
             {
-                convStatus === 1 && 
+                isCanChat && 
                 <div style={{padding: '4px 10px 10px'}}>
                     <Space size="small">
                         <Button type='primary' onClick={() => setVisible(true)}>辨证开方</Button>
@@ -370,12 +415,12 @@ export default function Dashboard(){
         >
             <ConsultDetails 
                 data={consultData.data} 
-                onAccept={(acceptStatus, painterData) => {
+                onAccept={(acceptStatus) => {
                     updateConsultData({...consultData, visible: false});
                     if(acceptStatus === 2){
                         // 接诊
                         setTabvalue(2);
-                        handleChoosePainter(painterData);
+                        handleChoosePainter({...consultData.data, status: 2});
                     }else {
                         // 拒诊
                         setUpdateTimeStamp(new Date().getTime());
@@ -581,14 +626,10 @@ export default function Dashboard(){
                         style={{width: 200}}
                         onClick={async () => {
                             const values = await formRef.current?.validateFields();
-                            await addPrescription({
-                                ...values, 
-                                ...values?.jiliang,
-                                ...conversationData
-                            });
                             setVisible(false);
                             setPreviewData({visible: false});
                             message.success('处方开具成功');
+                            handleAddPrescription(values);
                         }}
                     >直接开方</Button>
                 </Space>
@@ -604,19 +645,16 @@ export default function Dashboard(){
             width={700}
             {...previewFooter}
             okText="确定开方"
-            style={{height: 600}}
             onOk={async () => {
-                await addPrescription({
-                    ...preview.data, 
-                    ...preview.data?.jiliang,
-                    ...conversationData
-                });
                 setVisible(false);
                 setPreviewData({visible: false});
                 message.success('处方开具成功');
+                handleAddPrescription(preview.data);
             }}
         >
-            <MedicinePreviewer data={preview.data} patientData={conversationData}  />
+            <div style={{height: 600, overflowY: 'auto'}}>
+                <MedicinePreviewer data={preview.data} patientData={conversationData}  />
+            </div>
         </Modal>
     </div>
 }
@@ -721,9 +759,6 @@ function JLInput({value = {}, onChange}) {
 
 function formatLocalChatData(payload, MsgType) {
     return {
-      from: 'DOCTOR',
-      id: new Date().valueOf(),
-      MsgContent: {
         MsgType,
         MsgContent: {
           Text: '', // 文本内容
@@ -734,7 +769,6 @@ function formatLocalChatData(payload, MsgType) {
           data: {}, // 卡片数据
           ...payload
         }
-      }
     }
 }
   
