@@ -128,7 +128,7 @@ export default function initRequest(){
 }
 
 async function refreshToken() {
-  const _accessToken = Cookie.get('accessToken');
+  const _accessToken = await localforage.getItem('accessToken');
   const userInfo = await localforage.getItem('userInfo');
   const refreshToken = await localforage.getItem('refreshToken');
   const res = await axios.request({

@@ -27,7 +27,7 @@ function LoginPage(props) {
 
   const handleSubmit = async (values) => {
     const { data: { token, user } } = await loginByCode({mobilePhone: values.userName, code: values.code})
-    Cookie.set(process.env.TOKEN_NAME, token.accessToken);
+    await storage.setItem(process.env.TOKEN_NAME, token.accessToken);
     const imSign = await getIMSign();
     storage.setItem('refreshToken', token.refreshToken);
     storage.setItem('imSign', imSign.data);
