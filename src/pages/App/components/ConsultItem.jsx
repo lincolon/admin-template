@@ -39,7 +39,7 @@ export default function ConsultItem({ type, updateTimeStamp, onClick, onUpdateCo
                 list: res.data.items,
                 pageInfo: res.data.pageInfo,
             })
-            if(res.data?.items?.length){
+            if(res.data?.items?.length > 0){
                 onUpdateCount(res.data.items.length);
             }
         })
