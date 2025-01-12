@@ -243,18 +243,20 @@ export default function Dashboard(){
 
     // 开具处方
     const handleAddPrescription = async (values) => {
+        const xyzd = values.xyzdCode ? xyOptions.find(item => item.value === values.xyzdCode)?.label : '';// 西医诊断
+        const zyzd = values.zyzdCode ? zyOptions.find(item => item.value === values.zyzdCode)?.label : '';// 中医诊断
+        const zybz = values.zybzCode ? zxOptions.find(item => item.value === values.zybzCode)?.label : '';// 中医证型
         const { data } = await addPrescription({
             ...values, 
             ...values?.jiliang,
-            ...conversationData
+            ...conversationData,
+            xyzd, zyzd, zybz
         });
-        const xyzdName = values.xyzd ? xyOptions.find(item => item.value === values.xyzd)?.label : '';// 西医诊断
-        const zyzdName = values.zyzd ? zyOptions.find(item => item.value === values.zyzd)?.label : '';// 中医诊断
         const payload = formatLocalChatData({
             type: 'Prescription',
             data: {
                 status: 1,
-                title: xyzdName || zyzdName,
+                title: xyzd || zyzd,
                 prescriptionId: data.prescriptionId
             },
         }, 'TIMCustomElem');
@@ -394,7 +396,7 @@ export default function Dashboard(){
                     <Space size="small">
                         <Button type='primary' onClick={() => setVisible(true)}>辨证开方</Button>
                         <Button type='primary' onClick={() => setVisible(true)}>视频通话</Button>
-                        <Button type='primary' onClick={handleAddConsult}>补填问诊单</Button>
+                        {/* <Button type='primary' onClick={handleAddConsult}>补填问诊单</Button> */}
                         {/* <Button onClick={handleRefund}>退款</Button> */}
                     </Space>
                 </div>
@@ -445,7 +447,7 @@ export default function Dashboard(){
             <ProFormGroup title="病情诊断">
                 <ProFormSelect
                     label="西医诊断"
-                    name="xyzd"
+                    name="xyzdCode"
                     width="sm"
                     options={xyOptions}
                     placeholder="请输入西医诊断"
@@ -460,7 +462,7 @@ export default function Dashboard(){
                 />
                 <ProFormSelect
                     label="中医诊断"
-                    name="zyzd"
+                    name="zyzdCode"
                     width="sm"
                     options={zyOptions}
                     placeholder="请输入中医诊断"
@@ -475,7 +477,7 @@ export default function Dashboard(){
                 />
                 <ProFormSelect
                     label="中医证型"
-                    name="zybz"
+                    name="zybzCode"
                     width="sm"
                     options={zxOptions}
                     placeholder="请输入中医证型"
@@ -614,9 +616,9 @@ export default function Dashboard(){
                                     dosageFormName: jixing?.label,// 剂型，
                                     dosageFormSubName,// 代煎设置，
                                     cfTypeName,// 药房名称，
-                                    xyzdName: values.xyzd ? xyOptions.find(item => item.value === values.xyzd)?.label : '',// 西医诊断
-                                    zyzdName: values.zyzd ? zyOptions.find(item => item.value === values.zyzd)?.label : '',// 中医诊断
-                                    zybzName: values.zybz ? zxOptions.find(item => item.value === values.zybz)?.label : '',// 中医证型
+                                    xyzd: values.xyzdCode ? xyOptions.find(item => item.value === values.xyzdCode)?.label : '',// 西医诊断
+                                    zyzd: values.zyzdCode ? zyOptions.find(item => item.value === values.zyzdCode)?.label : '',// 中医诊断
+                                    zybz: values.zybzCode ? zxOptions.find(item => item.value === values.zybzCode)?.label : '',// 中医证型
                                 }
                             }) 
                         }}
@@ -677,9 +679,9 @@ function MedicinePreviewer({data, patientData}) {
                 title="病情诊断"
                 column={1}
                 items={[
-                    {key: '1', label: '西医诊断', children: data?.xyzdName || '无'},
-                    {key: '2', label: '中医诊断', children: data?.zyzdName || '无'},
-                    {key: '3', label: '中医证型', children: data?.zybzName || '无'},
+                    {key: '1', label: '西医诊断', children: data?.xyzd || '无'},
+                    {key: '2', label: '中医诊断', children: data?.zyzd || '无'},
+                    {key: '3', label: '中医证型', children: data?.zybz || '无'},
                 ]}
             />  
             <Divider />
