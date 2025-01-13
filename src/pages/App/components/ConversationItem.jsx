@@ -44,18 +44,25 @@ function PrescriptionCard({ data, onClick }){
     return (
         <div
             className='conv-prescription-card'
-            onClick={() => {onClick(data.prescriptionId)}}
+            onClick={() => {
+                if([0,7,8].includes(data.status))return;
+                onClick(data.prescriptionId)
+            }}
         >
             <div className='conv-prescription-card-content v-center'>
                 <img src={require('../../../assets/chat/prescription_icon.png')} className='inline-block' width="24" />
                 <span style={{marginLeft: 5}} className='inline-block fz-15 fz-weight'>{data?.title}</span>
+                <span className={`status-icon status${data?.status}`}></span>
             </div>
-            <div className='flexbox conv-prescription-card-footer v-center'>
-                <div className='flex1 fz-12 fz-gray'>查看处方详情</div>
-                <div className='v-center'>
-                    <RightOutlined style={{fontSize: 14, color: '#ccc'}} />
+            {
+                ![0,7,8].includes(data.status) &&
+                <div className='flexbox conv-prescription-card-footer v-center'>
+                    <div className='flex1 fz-12 fz-gray'>查看处方详情</div>
+                    <div className='v-center'>
+                        <RightOutlined style={{fontSize: 14, color: '#ccc'}} />
+                    </div>
                 </div>
-            </div>
+            }
         </div>
     )
 }

@@ -87,12 +87,30 @@
         .conv-prescription-card{
             background-color: #fff;
             .conv-prescription-card-content{
+                position: relative;
                 width: 280px;
                 height: 80px;
                 padding: 0 14px;
                 color: #fff;
                 background: url(../../assets/chat/prescription_bg.png) center no-repeat;
                 background-size: cover;
+                .status-icon{
+                    position: absolute;
+                    width: 80px;
+                    height: 70px;
+                    right: 0px;
+                    top: 0px;
+                    background-position: center;
+                    background-repeat: no-repeat;
+                    background-size: contain;
+                    &.status1{background-image: url(../../assets/chat/pay_unpay.png);}
+                    &.status2{background-image: url(../../assets/chat/pay_fahuo.png);}
+                    &.status3{background-image: url(../../assets/chat/pay_success.png);}
+                    &.status4{background-image: url(../../assets/chat/pay_cancel.png);}
+                    &.status5{background-image: url(../../assets/chat/pay_standby.png);}
+                    &.status6{background-image: url(../../assets/chat/pay_refund.png);}
+                    &.status7{background-image: url(../../assets/chat/pay_success.png);}
+                }
             }
             .conv-prescription-card-footer{
                 height: 40px;

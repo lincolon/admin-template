@@ -453,7 +453,7 @@ export default function Dashboard(){
                         // 拒诊
                         setUpdateTimeStamp(new Date().getTime());
                     }
-                    
+                    setStandbyCount(standbyCount - 1);
                 }}
             />
         </Modal>
