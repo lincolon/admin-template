@@ -1,18 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout } from 'antd';
-import TopHeader from './TopHeader'
 import Logo from './Logo'
 import { Outlet, useNavigate } from 'react-router-dom';
 import {
   PageContainer,
   ProCard,
   ProLayout,
-  SettingDrawer,
 } from '@ant-design/pro-components';
 
-const { Header, Content } = Layout;
-
 function MainLayout() {
+
+  const [pathname, setPathname] = useState('/app');
 
   const navigate = useNavigate();
   
@@ -21,6 +19,9 @@ function MainLayout() {
       fixedHeader
       fixSiderbar
       siderWidth={256}
+      logo={<Logo />}
+      title={process.env.PROJECT_NAME}
+      menu={{type: 'group'}}
       bgLayoutImgList={[
         {
           src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
@@ -41,15 +42,12 @@ function MainLayout() {
           width: '331px',
         },
       ]}
-      routes={[
-        {name: '第一页',path: '/login', component: () => <div>登录页</div> },
-        {name: '第二页',path: '/app',  component: () => <div>第二页</div>},
+      route={[
+        {name: '第一页',path: '/login' },
+        {name: '第二页',path: '/app'},
       ]}
-      title={process.env.PROJECT_NAME}
-      logo={<Logo />}
-      menu={{
-        type: 'group',
-      }}
+      
+      
       avatarProps={{
         src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
         title: '七妮妮',
@@ -62,10 +60,12 @@ function MainLayout() {
       //     <GithubFilled key="GithubFilled" />,
       //   ];
       // }}
+      location={{pathname}}
       menuItemRender={(item, dom) => (
         <div
           onClick={() => {
             setPathname(item.path || '/welcome');
+            navigate(item.path || '/welcome');
           }}
         >
           {dom}
@@ -76,10 +76,10 @@ function MainLayout() {
         <ProCard
           style={{
             height: '100vh',
-            minHeight: 800,
+            minHeight: 200,
           }}
         >
-          <Outlet />
+          <div />
         </ProCard>
       </PageContainer>
     </ProLayout>
