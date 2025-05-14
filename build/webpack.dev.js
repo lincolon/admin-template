@@ -31,7 +31,11 @@ module.exports = merge(common, {
     plugins: [
         new FriendlyErrorsWebpackPlugin({
             compilationSuccessInfo: {
-                messages: [`Your application is running here: http://127.0.0.1:${devPort}`],
+                messages: [
+                    `Your application is running here: http://127.0.0.1:${devPort}`，
+                    `Network: http://${require('ip').address()}:${devPort}`,
+                ],
+                
             },
             clearConsole: true,
         }),

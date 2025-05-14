@@ -58,6 +58,7 @@ module.exports = {
         rules: [
             {
                 test: /\.css$/i,
+                exclude: /\.module\.css$/, // 排除模块化css文件
                 use: [
                     devMode ? "style-loader" : MiniCssExtractPlugin.loader,
                     "css-loader",
@@ -76,13 +77,13 @@ module.exports = {
             {
                 test: /\.module\.css$/i,
                 use: [
-                    devMode ? "style-loader" : MiniCssExtractPlugin.loader,
+                    MiniCssExtractPlugin.loader,
                     {
                         loader: "css-loader",
                         options: {
                             modules: true,
+                            sourceMap: true,  
                             importLoaders: 1,
-                            localIdentName: devMode ? '[name]__[local]--[contenthash:base64:5]' : '[hash:base64:5]',
                         },
                     },
                     {
@@ -99,6 +100,7 @@ module.exports = {
             },
             {
                 test: /\.less$/i,
+                exclude: /\.module\.less$/,
                 use: [
                     devMode ? "style-loader" : MiniCssExtractPlugin.loader,
                     "css-loader",
@@ -126,13 +128,12 @@ module.exports = {
             {
                 test: /\.module\.less$/i,
                 use: [
-                    devMode ? "style-loader" : MiniCssExtractPlugin.loader,
+                    MiniCssExtractPlugin.loader,
                     {
                         loader: "css-loader",
                         options: {
                             modules: true,
                             importLoaders: 1,
-                            localIdentName:  devMode ? '[name]__[local]--[contenthash:base64:5]' : '[hash:base64:5]',
                         },
                     },
                     {
@@ -197,10 +198,13 @@ module.exports = {
         ]
     },
     plugins: [
+        new MiniCssExtractPlugin({
+            filename: '[name].css', // 提取的 CSS 文件名
+            chunkFilename: '[id].css', // 按需加载的 CSS 文件名
+        }),
         new webpack.ProgressPlugin(),
         new HtmlWebpackPlugin({
             title: projectConfig.name,
-            mapKey: projectConfig.map_key,
             inject: 'head',
             favicon: path.resolve(__dirname, '..', 'public/favicon.ico'),
             template: path.resolve(__dirname, '..', 'public/index.ejs'),

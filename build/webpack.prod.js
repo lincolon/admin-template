@@ -11,10 +11,15 @@ module.exports = merge(common, {
         minimize: true,
         minimizer: [   
             new TerserPlugin({
+                parallel: true, // 并行压缩
                 extractComments: false,
                 terserOptions:{
+                    mangle: true,
                     compress:{
-                      drop_console: true,          
+                        drop_console: true, 
+                        // 删除 debugger 语句
+                        drop_debugger: true,
+                        pure_funcs: ['console.error'], // 删除 console.error
                     }           
                 },
             }), 
