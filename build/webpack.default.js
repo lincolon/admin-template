@@ -5,8 +5,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const Dotenv = require('dotenv-webpack');
 
-const projectConfig = require('../project.config.json');
-
 const NODE_ENV = process.env.NODE_ENV
 
 const devMode = NODE_ENV === "development";
@@ -119,7 +117,6 @@ module.exports = {
                         options: {
                             lessOptions:{
                                 javascriptEnabled:true,
-                                modifyVars: projectConfig.theme,
                             }
                         }
                     }
@@ -151,7 +148,6 @@ module.exports = {
                         options: {
                             lessOptions:{
                                 javascriptEnabled:true,
-                                modifyVars: projectConfig.theme,
                             }
                         }
                     }
@@ -204,7 +200,7 @@ module.exports = {
         }),
         new webpack.ProgressPlugin(),
         new HtmlWebpackPlugin({
-            title: projectConfig.name,
+            title: process.env.PROJECT_NAME,
             inject: 'head',
             favicon: path.resolve(__dirname, '..', 'public/favicon.ico'),
             template: path.resolve(__dirname, '..', 'public/index.ejs'),

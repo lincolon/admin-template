@@ -3,6 +3,12 @@ import { Layout } from 'antd';
 import TopHeader from './TopHeader'
 import Logo from './Logo'
 import { Outlet, useNavigate } from 'react-router-dom';
+import {
+  PageContainer,
+  ProCard,
+  ProLayout,
+  SettingDrawer,
+} from '@ant-design/pro-components';
 
 const { Header, Content } = Layout;
 
@@ -11,46 +17,72 @@ function MainLayout() {
   const navigate = useNavigate();
   
   return (
-    <div className='flexbox'>
-      <div style={{position: 'relative', zIndex: 10000, backgroundColor: '#0C2556', width: 80}}>
-        <Logo navigate={navigate}/>
-      </div>
-      <Layout style={{ 
-        minHeight: '100vh', 
-      }}>
-        <Header style={{
-          position: 'fixed', 
-          padding: 0, 
-          zIndex: 999, 
-          width: '100%', 
-          boxShadow: '0px 1px 3px 0px rgba(0,0,0,0.13)', 
-          left: 0, 
-          height: 54,
-          linHeight: 54,
-          backgroundColor: '#fff'
-        }}  
+    <ProLayout
+      fixedHeader
+      fixSiderbar
+      siderWidth={256}
+      bgLayoutImgList={[
+        {
+          src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
+          left: 85,
+          bottom: 100,
+          height: '303px',
+        },
+        {
+          src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
+          bottom: -68,
+          right: -45,
+          height: '303px',
+        },
+        {
+          src: 'https://img.alicdn.com/imgextra/i3/O1CN018NxReL1shX85Yz6Cx_!!6000000005798-2-tps-884-496.png',
+          bottom: 0,
+          left: 0,
+          width: '331px',
+        },
+      ]}
+      routes={[
+        {name: '第一页',path: '/login', component: () => <div>登录页</div> },
+        {name: '第二页',path: '/app',  component: () => <div>第二页</div>},
+      ]}
+      title={process.env.PROJECT_NAME}
+      logo={<Logo />}
+      menu={{
+        type: 'group',
+      }}
+      avatarProps={{
+        src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
+        title: '七妮妮',
+      }}
+      // actionsRender={(props) => {
+      //   if (props.isMobile) return [];
+      //   return [
+      //     <InfoCircleFilled key="InfoCircleFilled" />,
+      //     <QuestionCircleFilled key="QuestionCircleFilled" />,
+      //     <GithubFilled key="GithubFilled" />,
+      //   ];
+      // }}
+      menuItemRender={(item, dom) => (
+        <div
+          onClick={() => {
+            setPathname(item.path || '/welcome');
+          }}
         >
-          <div className='flexbox' style={{position: 'relative', height: '100%', lineHeight: 1}}>
-            <div 
-              className='flex1'
-              style={{
-                paddingLeft: 100,
-                fontSize: 18,
-                fontWeight: 'bold',
-                color: '#333',
-                lineHeight: '54px',
-                fontStyle: 'italic',
-                letterSpacing: 1,
-              }}
-            >郑州市中医院医生工作台</div>
-            <TopHeader />
-          </div>
-        </Header>
-        <Content style={{ minHeight: 'auto', paddingTop: 54}} id="mainContainer">
+          {dom}
+        </div>
+      )}
+    >
+      <PageContainer>
+        <ProCard
+          style={{
+            height: '100vh',
+            minHeight: 800,
+          }}
+        >
           <Outlet />
-        </Content>
-      </Layout>
-    </div>
+        </ProCard>
+      </PageContainer>
+    </ProLayout>
   );
 }
 

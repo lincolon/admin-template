@@ -38,7 +38,7 @@ const baseRoutes = [
 ]
 
 function EntryPoint(){
-    // const isLogined = Cookie.get(projectConfig.token_name);
+    // const isLogined = Cookie.get(process.env.TOEKN_NAME);
     const isLogined = true;
     return !isLogined ? <Navigate to="login" replace /> : <Navigate to="app" />
 }
@@ -52,22 +52,8 @@ function RoutesWrapper({routes}){
 export default function Main(){ 
 
     return (
-        <ConfigProvider 
-            locale={zhCN}
-            theme={{
-                token: {
-                    colorPrimary: '#165DFF',
-                },
-                components: {
-                    Statistic: {
-                        contentFontSize: 14
-                    },
-                }
-            }}
-        >
-            <BrowserRouter>
-                <RoutesWrapper routes={baseRoutes}/>
-            </BrowserRouter>
-        </ConfigProvider>
+        <BrowserRouter>
+            <RoutesWrapper routes={baseRoutes}/>
+        </BrowserRouter>
     )
 }

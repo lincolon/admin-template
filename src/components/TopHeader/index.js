@@ -6,7 +6,6 @@ import {
 } from '@ant-design/icons';
 import storage from 'localforage';
 
-import projectConfig from '../../../project.config.json';
 
 import './style.css';
 
@@ -19,7 +18,7 @@ export default function TopHeader() {
   const [ userInfo, updateUserInfo ] = useState({})
 
   const logout = () => {
-    Cookie.remove(projectConfig.token_name);
+    Cookie.remove(process.env.TOEKN_NAME);
     window.location.href = '/login';
   }
 

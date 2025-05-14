@@ -1,12 +1,4 @@
-.logoContainer {
-    display: inline-block;
-    position: relative;
-    /* background: #ffffff; */
-    padding-left: 20px;
-    height: 54px;
-    overflow: hidden;
-    line-height: 54px; 
-  }
+
   
   .logo {
     display: inline-block;

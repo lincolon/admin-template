@@ -2,9 +2,8 @@ const merge = require('webpack-merge').merge;
 const webpack = require('webpack');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const common = require('./webpack.default.js');
-const projectConfig = require('../project.config.json');
 
-const devPort = process.env.PORT || projectConfig.port || '8000';
+const devPort = process.env.PORT || '8000';
 
 module.exports = merge(common, {
     mode: 'development',
@@ -31,7 +30,7 @@ module.exports = merge(common, {
         new FriendlyErrorsWebpackPlugin({
             compilationSuccessInfo: {
                 messages: [
-                    `Your application is running here: http://127.0.0.1:${devPort}`，
+                    `Your application is running here: http://127.0.0.1:${devPort}`,
                     `Network: http://${require('ip').address()}:${devPort}`,
                 ],
                 

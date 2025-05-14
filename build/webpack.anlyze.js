@@ -3,8 +3,6 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
-const projectConfig = require('../project.config.json');
-
 const devMode = process.env.NODE_ENV === "development";
 
 console.log(devMode, process.env.NODE_ENV)
@@ -73,7 +71,6 @@ module.exports = {
                         options: {
                             lessOptions:{
                                 javascriptEnabled:true,
-                                modifyVars: projectConfig.theme,
                             }
                         }
                     }
@@ -126,8 +123,7 @@ module.exports = {
             contextRegExp: /moment$/,
         }),
         new HtmlWebpackPlugin({
-            title: projectConfig.name,
-            mapKey: projectConfig.map_key,
+            title: process.env.PROJECT_NAME,
             inject: 'head',
             favicon: path.resolve(__dirname, '..', 'public/favico.png'),
             template: path.resolve(__dirname, '..', 'public/index.ejs'),
