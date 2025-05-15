@@ -45,10 +45,6 @@ const baseRoutes = [
     { path: '*', element: <NotFound /> },
 ]
 
-
-
-
-
 export default function Main(){ 
 
     return (
