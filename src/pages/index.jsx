@@ -1,46 +1,14 @@
 import React from 'react'
 import { useRoutes, Navigate, BrowserRouter } from 'react-router-dom'
-import { ConfigProvider } from 'antd';
-import zhCN from 'antd/lib/locale/zh_CN'; 
-
 // import routes from '../config/routes'
 
 import LoginPage from './Login'
-import List from './List'
-import Details from './Details'
 import Page403 from './Errors/403';
 import NotFound from './Errors/404';
 import Page500 from './Errors/500';
 import MainLayout from '../components/MainLayout';
 
-const baseRoutes = [
-    {
-        path: '/login',
-        element: <LoginPage />,
-    },
-    {
-        path: '/*',
-        element: <MainLayout />,
-        children: [
-            {
-                path: '',
-                element: <EntryPoint />,
-            },
-            {
-                path: 'list',
-                element: <List />,
-            },
-            {
-                path: 'details',
-                element: <Details />,
-            },
-        ]
-    },
-    { path: '403', element: <Page403 /> },
-    { path: '404', element: <NotFound /> },
-    { path: '500', element: <Page500 /> },
-    { path: '*', element: <NotFound /> },
-]
+import demoRoutes from '../routes/demo';
 
 function EntryPoint(){
     // const isLogined = Cookie.get(process.env.TOEKN_NAME);
@@ -51,6 +19,46 @@ function EntryPoint(){
 function RoutesWrapper({routes}){
     return useRoutes(routes);
 }
+
+function createMenu(routes){
+    return routes.map((item) => {
+        if (item.children) {
+            return {
+                ...item,
+                routes: createMenu(item.children)
+            }
+        } else {
+            return item
+        }
+    })
+}
+
+const routes = [
+    ...demoRoutes
+]
+
+const baseRoutes = [
+    {
+        path: '/login',
+        element: <LoginPage />,
+    },
+    {
+        path: '',
+        element: <MainLayout routes={routes} />,
+        children: [
+            {
+                path: '/',
+                element: <EntryPoint />,
+            }
+        ].concat(routes)
+    },
+    { path: '403', element: <Page403 /> },
+    { path: '404', element: <NotFound /> },
+    { path: '500', element: <Page500 /> },
+    { path: '*', element: <NotFound /> },
+]
+
+
 
 
 

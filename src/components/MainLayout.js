@@ -13,7 +13,7 @@ import {
 import Cookie from 'js-cookie';
 import Logo from './Logo'
 
-function MainLayout() {
+function MainLayout(props) {
 
   const currentPath = useLocation().pathname;
   const [pathname, setPathname] = useState(currentPath);
@@ -43,38 +43,7 @@ function MainLayout() {
       )}
       route={{
         path: '/',
-        routes: [
-          {
-            path: '/login',
-            name: '登录页',
-            icon: <GithubFilled />
-            // component: './Login',
-          },
-          {
-            path: '/list',
-            name: '列表页',
-            routes: [
-              {
-                path: '/list/cardList',
-                name: '卡片列表'
-              },
-              {
-                path: '/list/basicList',
-                name: '基础列表'
-              },
-              {
-                path: '/list/searchList',
-                name: '搜索列表'
-              }
-            ]
-            // component: './App',
-          },
-          {
-            path: '/details',
-            name: '详情页',
-            // component: './App',
-          },
-        ],
+        routes: props.routes,
       }}
       avatarProps={{
         src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
