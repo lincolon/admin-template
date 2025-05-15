@@ -34,8 +34,8 @@ function MainLayout(props) {
       menuItemRender={(item, dom) => (
         <div
           onClick={() => {
-            setPathname(item.path || '/welcome');
-            navigate(item.path || '/welcome');
+            setPathname(item.path);
+            navigate(item.path);
           }}
         >
           {dom}

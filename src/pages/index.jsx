@@ -13,24 +13,11 @@ import demoRoutes from '../routes/demo';
 function EntryPoint(){
     // const isLogined = Cookie.get(process.env.TOEKN_NAME);
     const isLogined = true;
-    return !isLogined ? <Navigate to="login" replace /> : <Navigate to="app" />
+    return !isLogined ? <Navigate to="login" replace /> : <Navigate to="/" />
 }
 
 function RoutesWrapper({routes}){
     return useRoutes(routes);
-}
-
-function createMenu(routes){
-    return routes.map((item) => {
-        if (item.children) {
-            return {
-                ...item,
-                routes: createMenu(item.children)
-            }
-        } else {
-            return item
-        }
-    })
 }
 
 const routes = [

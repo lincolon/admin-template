@@ -2,6 +2,9 @@ import React from 'react';
 import { ConfigProvider } from 'antd';
 import * as ReactDOM from 'react-dom/client';
 import storage from 'localforage';
+import { Provider } from 'react-redux';
+
+import store from './store';
 import App from './pages/index';
 import '@modules/nprogress/nprogress.css'; 
 import './global.less'
@@ -19,6 +22,7 @@ initRequest();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
+    <Provider store={store}>
     <ConfigProvider 
         locale={zhCN}
         theme={{
@@ -34,4 +38,5 @@ root.render(
     >
         <App />
     </ConfigProvider>
+    </Provider>
 );

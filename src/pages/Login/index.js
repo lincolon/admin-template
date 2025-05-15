@@ -23,7 +23,7 @@ function LoginPage(props) {
 
   const handleSubmit = async (values) => {
     // 这里可以使用登录的接口
-    navgiate('/app');
+    navgiate('/');
   }
 
   return (
