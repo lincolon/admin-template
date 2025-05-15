@@ -6,7 +6,8 @@ import zhCN from 'antd/lib/locale/zh_CN';
 // import routes from '../config/routes'
 
 import LoginPage from './Login'
-import App from './App'
+import List from './List'
+import Details from './Details'
 import Page403 from './Errors/403';
 import NotFound from './Errors/404';
 import Page500 from './Errors/500';
@@ -26,9 +27,13 @@ const baseRoutes = [
                 element: <EntryPoint />,
             },
             {
-                path: 'app',
-                element: <App />,
-            }
+                path: 'list',
+                element: <List />,
+            },
+            {
+                path: 'details',
+                element: <Details />,
+            },
         ]
     },
     { path: '403', element: <Page403 /> },

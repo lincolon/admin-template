@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
-import { Layout } from 'antd';
+import { 
+  InfoCircleFilled,
+  QuestionCircleFilled,
+  GithubFilled,
+} from '@ant-design/icons';
 import Logo from './Logo'
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  PageContainer,
-  ProCard,
   ProLayout,
 } from '@ant-design/pro-components';
 
 function MainLayout() {
 
-  const [pathname, setPathname] = useState('/app');
+  const currentPath = useLocation().pathname;
+  const [pathname, setPathname] = useState(currentPath);
 
   const navigate = useNavigate();
   
   return (
+    <section style={{height: '100vh', overflow: 'auto'}}>
     <ProLayout
       fixedHeader
       fixSiderbar
@@ -22,6 +26,7 @@ function MainLayout() {
       logo={<Logo />}
       title={process.env.PROJECT_NAME}
       menu={{type: 'group'}}
+      layout='side'
       bgLayoutImgList={[
         {
           src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
@@ -42,24 +47,39 @@ function MainLayout() {
           width: '331px',
         },
       ]}
-      route={[
-        {name: '第一页',path: '/login' },
-        {name: '第二页',path: '/app'},
-      ]}
-      
-      
+      route={{
+        path: '/',
+        routes: [
+          {
+            path: '/login',
+            name: '登录页',
+            icon: <GithubFilled />
+            // component: './Login',
+          },
+          {
+            path: '/list',
+            name: '列表页',
+            // component: './App',
+          },
+          {
+            path: '/details',
+            name: '详情页',
+            // component: './App',
+          },
+        ],
+      }}
       avatarProps={{
         src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
         title: '七妮妮',
       }}
-      // actionsRender={(props) => {
-      //   if (props.isMobile) return [];
-      //   return [
-      //     <InfoCircleFilled key="InfoCircleFilled" />,
-      //     <QuestionCircleFilled key="QuestionCircleFilled" />,
-      //     <GithubFilled key="GithubFilled" />,
-      //   ];
-      // }}
+      actionsRender={(props) => {
+        if (props.isMobile) return [];
+        return [
+          <InfoCircleFilled key="InfoCircleFilled" />,
+          <QuestionCircleFilled key="QuestionCircleFilled" />,
+          <GithubFilled key="GithubFilled" />,
+        ];
+      }}
       location={{pathname}}
       menuItemRender={(item, dom) => (
         <div
@@ -71,18 +91,16 @@ function MainLayout() {
           {dom}
         </div>
       )}
+      token={{
+        pageContainer: {
+          paddingInlinePageContainerContent: 24,
+          paddingBlockPageContainerContent: 20
+        }
+      }}
     >
-      <PageContainer>
-        <ProCard
-          style={{
-            height: '100vh',
-            minHeight: 200,
-          }}
-        >
-          <div />
-        </ProCard>
-      </PageContainer>
+      <Outlet />
     </ProLayout>
+    </section>
   );
 }
 
