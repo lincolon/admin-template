@@ -9,6 +9,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   ProLayout,
 } from '@ant-design/pro-components';
+import routes from '../config/routes';
 
 function MainLayout() {
 
@@ -22,31 +23,22 @@ function MainLayout() {
     <ProLayout
       fixedHeader
       fixSiderbar
-      siderWidth={256}
       logo={<Logo />}
+      siderWidth={256}
       title={process.env.PROJECT_NAME}
-      menu={{type: 'group'}}
-      layout='side'
-      bgLayoutImgList={[
-        {
-          src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
-          left: 85,
-          bottom: 100,
-          height: '303px',
-        },
-        {
-          src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
-          bottom: -68,
-          right: -45,
-          height: '303px',
-        },
-        {
-          src: 'https://img.alicdn.com/imgextra/i3/O1CN018NxReL1shX85Yz6Cx_!!6000000005798-2-tps-884-496.png',
-          bottom: 0,
-          left: 0,
-          width: '331px',
-        },
-      ]}
+      location={{pathname}}
+      layout='mix' // 'side' | 'top' | 'mix'
+      // menu={{type: 'group'}}
+      menuItemRender={(item, dom) => (
+        <div
+          onClick={() => {
+            setPathname(item.path || '/welcome');
+            navigate(item.path || '/welcome');
+          }}
+        >
+          {dom}
+        </div>
+      )}
       route={{
         path: '/',
         routes: [
@@ -59,6 +51,20 @@ function MainLayout() {
           {
             path: '/list',
             name: '列表页',
+            routes: [
+              {
+                path: '/list/cardList',
+                name: '卡片列表'
+              },
+              {
+                path: '/list/basicList',
+                name: '基础列表'
+              },
+              {
+                path: '/list/searchList',
+                name: '搜索列表'
+              }
+            ]
             // component: './App',
           },
           {
@@ -80,17 +86,26 @@ function MainLayout() {
           <GithubFilled key="GithubFilled" />,
         ];
       }}
-      location={{pathname}}
-      menuItemRender={(item, dom) => (
-        <div
-          onClick={() => {
-            setPathname(item.path || '/welcome');
-            navigate(item.path || '/welcome');
-          }}
-        >
-          {dom}
-        </div>
-      )}
+      bgLayoutImgList={[
+        {
+          src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
+          left: 85,
+          bottom: 100,
+          height: '303px',
+        },
+        {
+          src: 'https://img.alicdn.com/imgextra/i2/O1CN01O4etvp1DvpFLKfuWq_!!6000000000279-2-tps-609-606.png',
+          bottom: -68,
+          right: -45,
+          height: '303px',
+        },
+        {
+          src: 'https://img.alicdn.com/imgextra/i3/O1CN018NxReL1shX85Yz6Cx_!!6000000005798-2-tps-884-496.png',
+          bottom: 0,
+          left: 0,
+          width: '331px',
+        },
+      ]}
       token={{
         pageContainer: {
           paddingInlinePageContainerContent: 24,
