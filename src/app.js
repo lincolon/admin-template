@@ -5,6 +5,7 @@ import storage from 'localforage';
 import App from './pages/index';
 import '@modules/nprogress/nprogress.css'; 
 import './global.less'
+import './reset.less'
 
 import initRequest from './utils/request';
 

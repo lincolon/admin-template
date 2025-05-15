@@ -3,13 +3,15 @@ import {
   InfoCircleFilled,
   QuestionCircleFilled,
   GithubFilled,
+  LogoutOutlined,
 } from '@ant-design/icons';
-import Logo from './Logo'
+import { Dropdown } from 'antd';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   ProLayout,
 } from '@ant-design/pro-components';
-import routes from '../config/routes';
+import Cookie from 'js-cookie';
+import Logo from './Logo'
 
 function MainLayout() {
 
@@ -77,6 +79,30 @@ function MainLayout() {
       avatarProps={{
         src: 'https://gw.alipayobjects.com/zos/antfincdn/efFD%24IOql2/weixintupian_20170331104822.jpg',
         title: '七妮妮',
+        render: (props, dom) => {
+          return (
+            <Dropdown
+              menu={{
+                items: [
+                  {
+                    key: 'logout',
+                    icon: <LogoutOutlined />,
+                    label: '退出登录',
+                  },
+                ],
+                onClick: ({_, key}) => {
+                  if (key === 'logout') {
+                    Cookie.remove(process.env.TOEKN_NAME);
+                    window.location.href = '/login';
+                  }
+                }
+              }}
+              on
+            >
+              {dom}
+            </Dropdown>
+          );
+        },
       }}
       actionsRender={(props) => {
         if (props.isMobile) return [];
